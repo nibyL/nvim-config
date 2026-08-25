@@ -1,0 +1,13 @@
+# Ignorer les données et l'état de Neovim
+data/
+state/
+log/
+
+# Ignorer les fichiers de swap et de backup de Vim/Neovim
+*.swp
+*.swo
+*~
+
+# Ignorer les fichiers spécifiques à Windows
+Thumbs.db
+.DS_Store
