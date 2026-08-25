@@ -11,3 +11,7 @@ log/
 # Ignorer les fichiers spécifiques à Windows
 Thumbs.db
 .DS_Store
+
+# fichier neovim inutils
+  *.dll
+  nvim-pack-lock.json
