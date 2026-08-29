@@ -13,5 +13,5 @@ Thumbs.db
 .DS_Store
 
 # fichier neovim inutils
-  *.dll
-  nvim-pack-lock.json
+*.dll
+nvim-pack-lock.json

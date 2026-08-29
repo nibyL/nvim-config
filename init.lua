@@ -11,7 +11,6 @@ vim.g.maplocalleader = ' '
 -- ============================================================================
 -- 2. OPTIONS GÉNÉRALES
 -- ============================================================================
-
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.ignorecase = true
@@ -34,6 +33,222 @@ vim.opt.selectmode = 'mouse,key'
 -- Fond sombre
 vim.api.nvim_set_hl(0, 'Normal', { bg = '#0f0f0f' })
 vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#000000' })
+
+-- Thème
+-- vim.cmd.colorscheme('dark2026')
+
+-- ----------------------------------------------------------------------------
+-- STATUSLINE NATIVE
+-- ----------------------------------------------------------------------------
+
+vim.opt.laststatus = 3
+
+-- Couleurs
+
+vim.api.nvim_set_hl(0, 'StatusLine', {
+    fg = '#cdd6f4',
+    bg = '#1e1e2e',
+})
+
+vim.api.nvim_set_hl(0, 'StatusLineNC', {
+    fg = '#6c7086',
+    bg = '#181825',
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeNormal', {
+    fg = '#11111b',
+    bg = '#a6e3a1',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeInsert', {
+    fg = '#11111b',
+    bg = '#89b4fa',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeVisual', {
+    fg = '#11111b',
+    bg = '#cba6f7',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeCommand', {
+    fg = '#11111b',
+    bg = '#f9e2af',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeReplace', {
+    fg = '#11111b',
+    bg = '#f38ba8',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusModeTerminal', {
+    fg = '#11111b',
+    bg = '#94e2d5',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusFile', {
+    fg = '#cdd6f4',
+    bg = '#313244',
+})
+
+vim.api.nvim_set_hl(0, 'StatusModified', {
+    fg = '#f9e2af',
+    bg = '#313244',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusDiagnosticError', {
+    fg = '#f38ba8',
+    bg = '#1e1e2e',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusDiagnosticWarn', {
+    fg = '#f9e2af',
+    bg = '#1e1e2e',
+    bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'StatusInfo', {
+    fg = '#bac2de',
+    bg = '#1e1e2e',
+})
+
+-- Fonctions dynamiques
+
+local function status_mode()
+    local mode = vim.api.nvim_get_mode().mode
+
+    local names = {
+        n = ' NORMAL ',
+        i = ' INSERT ',
+        v = ' VISUAL ',
+        V = ' V-LINE ',
+        ['\22'] = ' V-BLOCK ',
+        c = ' COMMAND ',
+        R = ' REPLACE ',
+        t = ' TERMINAL ',
+        s = ' SELECT ',
+        S = ' S-LINE ',
+    }
+
+    local groups = {
+        n = 'StatusModeNormal',
+        i = 'StatusModeInsert',
+        v = 'StatusModeVisual',
+        V = 'StatusModeVisual',
+        ['\22'] = 'StatusModeVisual',
+        c = 'StatusModeCommand',
+        R = 'StatusModeReplace',
+        t = 'StatusModeTerminal',
+        s = 'StatusModeVisual',
+        S = 'StatusModeVisual',
+    }
+
+    return '%#' .. (groups[mode] or 'StatusModeNormal') .. '#'
+        .. (names[mode] or ' NORMAL ')
+        .. '%*'
+end
+
+local function status_diagnostics()
+    local errors = #vim.diagnostic.get(0, {
+        severity = vim.diagnostic.severity.ERROR,
+    })
+
+    local warnings = #vim.diagnostic.get(0, {
+        severity = vim.diagnostic.severity.WARN,
+    })
+
+    local result = ''
+
+    if errors > 0 then
+        result = result
+            .. '%#StatusDiagnosticError#'
+            .. ' E:' .. errors
+            .. '%*'
+    end
+
+    if warnings > 0 then
+        result = result
+            .. '%#StatusDiagnosticWarn#'
+            .. ' W:' .. warnings
+            .. '%*'
+    end
+
+    return result
+end
+
+local function status_filename()
+    local filename = vim.fn.expand('%:t')
+
+    if filename == '' then
+        filename = '[No Name]'
+    end
+
+    local result =
+        '%#StatusFile#'
+        .. ' '
+        .. filename
+        .. ' '
+
+    if vim.bo.modified then
+        result =
+            result
+            .. '%#StatusModified#'
+            .. '[+]'
+            .. '%*'
+    end
+
+    if vim.bo.readonly then
+        result =
+            result
+            .. ' RO'
+    end
+
+    return result .. '%*'
+end
+
+local function status_encoding()
+    local encoding = vim.bo.fileencoding
+
+    if encoding == '' then
+        encoding = vim.o.encoding
+    end
+
+    return encoding
+end
+
+-- Statusline
+
+_G.native_statusline = function()
+    return table.concat({
+        status_mode(),
+        status_filename(),
+        '%=',
+
+        status_diagnostics(),
+
+        '%#StatusInfo#',
+        ' ',
+        vim.bo.filetype ~= '' and vim.bo.filetype or 'text',
+        ' │ ',
+        status_encoding(),
+        ' [',
+        vim.bo.fileformat,
+        '] ',
+        '%l:%c',
+        ' │ ',
+        '%p%% ',
+        '%*',
+    })
+end
+
+vim.opt.statusline = '%{%v:lua.native_statusline()%}'
 
 -- ============================================================================
 -- 3. PLUGINS
@@ -59,6 +274,9 @@ vim.pack.add({
     -- Autocomplétion
     'https://github.com/saghen/blink.lib',
     'https://github.com/saghen/blink.cmp',
+
+    -- Thème
+    'https://github.com/D0nw0r/dark2026.nvim',
 })
 
 -- ============================================================================
@@ -251,6 +469,7 @@ local servers = {
     'ts_ls',
     'svelte',
     'nushell',
+    'asm_lsp',
 }
 
 for _, server in ipairs(servers) do
