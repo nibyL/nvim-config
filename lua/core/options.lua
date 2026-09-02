@@ -41,13 +41,28 @@ vim.opt.keymodel = 'startsel,stopsel'
 vim.opt.selectmode = 'mouse,key'
 
 -- ============================================================================
--- APPARENCE DE BASE (Fallback avant le chargement du thème)
+-- APPARENCE DE BASE (Force le fond coloré même sans thème)
 -- ============================================================================
 
-vim.api.nvim_set_hl(0, 'Normal', {
-  bg = '#0f0f0f',
-})
+-- 1. Définition des couleurs de fallback (Variables pour modification facile)
+local fallback_bg_main = '#121212'
+local fallback_bg_float = '#040202'
 
-vim.api.nvim_set_hl(0, 'NormalFloat', {
-  bg = '#000000',
+-- 2. Active le support des couleurs 24-bit (indispensable pour les hexadécimaux)
+vim.o.termguicolors = true
+
+-- 3. Force les couleurs de fond au démarrage (pour éviter le flash)
+vim.api.nvim_set_hl(0, 'Normal', { bg = fallback_bg_main })
+vim.api.nvim_set_hl(0, 'NormalFloat', { bg = fallback_bg_float })
+
+-- 4. LA MAGIE : Réapplique ces couleurs si le thème par défaut essaie de les rendre transparentes
+vim.api.nvim_create_autocmd('ColorScheme', {
+  desc = 'Forcer le fond coloré même avec le thème par défaut',
+  callback = function()
+    -- On vérifie si aucun thème personnalisé n'est chargé
+    if vim.g.colors_name == nil or vim.g.colors_name == 'default' then
+      vim.api.nvim_set_hl(0, 'Normal', { bg = fallback_bg_main })
+      vim.api.nvim_set_hl(0, 'NormalFloat', { bg = fallback_bg_float })
+    end
+  end,
 })
