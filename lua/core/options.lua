@@ -66,3 +66,24 @@ vim.api.nvim_create_autocmd('ColorScheme', {
     end
   end,
 })
+
+
+-- ============================================================================
+-- SHELL (PowerShell au lieu de CMD)
+-- ============================================================================
+
+-- 'pwsh' pour PowerShell 7+ (recommandé, plus rapide et moderne)
+-- 'powershell' pour Windows PowerShell 5.1 (inclus par défaut dans Windows 10/11)
+vim.o.shell = 'pwsh'
+
+-- Arguments pour un démarrage propre et rapide de PowerShell
+vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
+
+
+-- ============================================================================
+-- AJOUTER CHOCOLATEY AU PATH (pour ripgrep et autres outils)
+-- ============================================================================
+local choco_path = 'C:\\ProgramData\\chocolatey\\bin'
+if vim.fn.isdirectory(choco_path) == 1 then
+  vim.env.PATH = choco_path .. ';' .. vim.env.PATH
+end

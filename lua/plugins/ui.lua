@@ -25,21 +25,21 @@ require('gitsigns').setup({})
 -- ============================================================================
 
 local snacks = require('snacks')
-
 snacks.setup({
   picker = {
     enabled = true,
+    -- Configuration pour Windows PowerShell
+    find_command = vim.fn.executable('fd') == 1
+      and {'fd', '--type', 'f'}
+      or {'powershell', '-Command', 'Get-ChildItem -Recurse -File | Select-Object -ExpandProperty FullName'},
   },
-
   explorer = {
     enabled = true,
   },
-
   lazygit = {
     enabled = true,
   },
 })
-
 -- ============================================================================
 -- THÈME PERSISTANT (Se souvient de votre choix après :restart)
 -- ============================================================================

@@ -45,4 +45,7 @@ vim.pack.add({
   -- --------------------------------------------------------------------------
 
   'https://github.com/D0nw0r/dark2026.nvim',
+  'https://github.com/Mofiqul/dracula.nvim',
+  'https://github.com/folke/tokyonight.nvim',
+  'https://github.com/Mofiqul/vscode.nvim',
 })
