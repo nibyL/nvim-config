@@ -37,6 +37,8 @@ vim.o.background = 'dark'
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
+vim.o.autoindent = true
+vim.o.smartindent = true
 vim.opt.keymodel = 'startsel,stopsel'
 vim.opt.selectmode = 'mouse,key'
 
