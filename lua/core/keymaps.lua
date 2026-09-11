@@ -132,6 +132,19 @@ vim.keymap.set('n', '<leader>fm', function()
     vim.lsp.buf.format({ async = true })
 end, { desc = 'Formater le code' })
 
+-- Recherche de fichiers dans tout le disque pour ouvrir un fichier pour la toute première fois dans néovim
+vim.keymap.set('n', '<leader>fR', function()
+  require('snacks').picker.files({
+    -- Définir les dossiers racines à scanner simultanément
+    dirs = { 'C:/', 'D:/' },
+    -- Vos options de filtrage fd restent inchangées
+    find_command = {'fd', '-tf', '-E', '.git', '-E', 'node_modules', '-E', '*.exe', '-E', '*.dll'},
+  })
+end, { desc = 'Recherche C:/ et D:/' })
+
+
+-- Fermer le buffer actuel (sans fermer Neovim)
+vim.keymap.set('n', '<leader>q', ':bd<CR>', { desc = 'Fermer le buffer' })
 
 -- ============================================================================
 -- LAZYGIT (Interface Git visuelle)
