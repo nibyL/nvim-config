@@ -1,12 +1,16 @@
 -- ============================================================================
 -- FIX WINDOWS (À placer tout en haut)
 -- ============================================================================
--- Redirige les fichiers temporaires de Neovim vers un dossier dédié sous C:\Temp
+-- 1. On utilise des antislashs stricts pour Windows (essentiel pour pwsh)
 vim.env.TMP = 'C:\\Temp\\NvimTemp'
 vim.env.TEMP = 'C:\\Temp\\NvimTemp'
--- Crée le dossier de base. Neovim créera automatiquement son sous-dossier '\nvim' dedans.
+
+-- 2. CRUCIAL : On crée manuellement TOUT le chemin, y compris le sous-dossier '\nvim' 
+-- pour empêcher Neovim et pwsh de s'emmêler les pinceaux au démarrage.
 vim.fn.mkdir('C:\\Temp\\NvimTemp', 'p')
--- Forcer l'utilisation de Clang pour Treesitter (MinGW échoue sur les .so)
+vim.fn.mkdir('C:\\Temp\\NvimTemp\\nvim', 'p')
+
+-- Forcer l'utilisation de Clang pour Treesitter
 vim.env.CC = 'C:/Program Files/LLVM/bin/clang.exe'
 
 -- ============================================================================

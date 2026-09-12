@@ -73,9 +73,6 @@ end, { desc = 'Sélecteur de thème' })
 
 
 -- ============================================================================
--- TERMINAL UNIQUE (Ouvre un terminal en bas, ferme TOUS les anciens)
--- ============================================================================
--- ============================================================================
 -- TERMINAL SNACKS (Terminal flottant ultra-moderne)
 -- ============================================================================
 vim.keymap.set({ 'n', 't' }, '<leader>tt', function()
@@ -146,6 +143,29 @@ vim.keymap.set('n', '<leader>fR', function()
         find_command = { 'fd', '-tf', '-E', '.git', '-E', 'node_modules', '-E', '*.exe', '-E', '*.dll' },
     })
 end, { desc = 'Recherche C:/ et D:/' })
+
+
+-- Recherche de dossiers dans tout le disque pour ouvrir un dossiers pour la toute première fois dans néovim
+vim.keymap.set('n', '<leader>fD', function()
+    require('snacks').picker({
+        title = "Dossiers (C: & D:)",
+        dirs = { 'C:/', 'D:/' },
+        -- On utilise directement le moteur de recherche de fichiers
+        finder = "files",
+        -- On force fd à lister uniquement les dossiers (-td) et à appliquer vos exclusions
+        cmd = "fd",
+        args = { '-td', '-E', '.git', '-E', 'node_modules', '-E', 'AppData' },
+        -- Snacks gère nativement le changement de répertoire avec l'action cd
+        actions = {
+            ["confirm"] = function(picker, item)
+                picker:close()
+                if item and item.text then
+                    vim.cmd('cd ' .. vim.fn.fnameescape(item.text))
+                end
+            end,
+        },
+    })
+end, { desc = "Changer dossier (C/D)" })
 
 
 -- Fermer le buffer actuel (sans fermer Neovim)
