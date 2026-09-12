@@ -23,16 +23,27 @@ require('gitsigns').setup({})
 -- ============================================================================
 -- SNACKS
 -- ============================================================================
--- lua/plugins/ui.lua
 require("snacks").setup({
   picker = {
     enabled = true,
+    -- Configure l'explorateur et les fenêtres de recherche pour TOUT afficher par défaut
+    win = {
+      input = {
+        keys = {
+          -- Ces options forcent la visibilité dès l'ouverture
+          ["<a-i>"] = { "toggle_ignored", mode = { "n", "i" } },
+          ["<a-h>"] = { "toggle_hidden", mode = { "n", "i" } },
+        },
+      },
+    },
+    -- Configuration par défaut pour les recherches et l'explorateur
+    hidden = true,   -- <-- Affiche les fichiers commençant par un point (.vscode)
+    ignored = true,  -- <-- Affiche les fichiers exclus par le .gitignore (.venv)
     sources = {
       hybrid = {
         name = "hybrid",
         title = "📂 Projet + 🌍 Historique Global",
         multi = { "files", "recent" },
-        -- Fonction native de Snacks pour filtrer les doublons de fichiers instantanément
         transform = function(item, ctx)
           return require("snacks.picker.transform").unique_file(item, ctx)
         end,

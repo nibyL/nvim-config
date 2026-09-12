@@ -58,6 +58,7 @@ local servers = {
   'svelte',
   'nushell',
   'asm_lsp',
+  'pyright',
 }
 
 for _, server in ipairs(servers) do
