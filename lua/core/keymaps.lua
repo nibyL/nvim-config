@@ -75,28 +75,33 @@ end, { desc = 'Sélecteur de thème' })
 -- ============================================================================
 -- TERMINAL UNIQUE (Ouvre un terminal en bas, ferme TOUS les anciens)
 -- ============================================================================
-vim.keymap.set('n', '<leader>tt', function()
-    -- 1. Ouvre le nouveau terminal en bas
-    vim.cmd('botright 15split | terminal')
-    local new_term_win = vim.api.nvim_get_current_win()
-
-    -- 2. Ferme TOUS les autres buffers de type terminal (même les cachés)
-    local current_buf = vim.api.nvim_win_get_buf(new_term_win)
-
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if buf ~= current_buf and vim.bo[buf].buftype == 'terminal' then
-            vim.api.nvim_buf_delete(buf, { force = true })
-        end
-    end
-
-    -- 3. Entre en mode insertion
-    vim.cmd('startinsert')
-end, { desc = 'Terminal unique en bas' })
+-- ============================================================================
+-- TERMINAL SNACKS (Terminal flottant ultra-moderne)
+-- ============================================================================
+vim.keymap.set({ 'n', 't' }, '<leader>tt', function()
+    require('snacks').terminal.toggle()
+end, { desc = 'Terminal flottant (Toggle)' })
 
 
 -- ============================================================================
--- GESTION DES FICHIERS (Recherche, formatage,)
+-- GESTION DES DOSSIERS ET FICHIERS (Recherche, formatage,)
 -- ============================================================================
+
+--Recherche de dossiers dans l'historique des dossiers ouverts
+vim.keymap.set('n', '<leader>fd', function()
+    require('snacks').picker.recent({
+        title = "Dossiers Récents",
+        confirm = function(picker, item)
+            picker:close()
+            if item then vim.cmd('cd ' .. vim.fn.fnameescape(item.file)) end
+        end,
+        transform = function(item, ctx)
+            item.file = vim.fn.fnamemodify(item.file, ":h")
+            return require("snacks.picker.transform").unique_file(item, ctx)
+        end,
+    })
+end, { desc = "Historique des dossiers" })
+
 
 --Recherche de fichiers dans le projet courant et l'historique des fichiers ouverts
 vim.keymap.set('n', '<leader>fo', function()
@@ -134,12 +139,12 @@ end, { desc = 'Formater le code' })
 
 -- Recherche de fichiers dans tout le disque pour ouvrir un fichier pour la toute première fois dans néovim
 vim.keymap.set('n', '<leader>fR', function()
-  require('snacks').picker.files({
-    -- Définir les dossiers racines à scanner simultanément
-    dirs = { 'C:/', 'D:/' },
-    -- Vos options de filtrage fd restent inchangées
-    find_command = {'fd', '-tf', '-E', '.git', '-E', 'node_modules', '-E', '*.exe', '-E', '*.dll'},
-  })
+    require('snacks').picker.files({
+        -- Définir les dossiers racines à scanner simultanément
+        dirs = { 'C:/', 'D:/' },
+        -- Vos options de filtrage fd restent inchangées
+        find_command = { 'fd', '-tf', '-E', '.git', '-E', 'node_modules', '-E', '*.exe', '-E', '*.dll' },
+    })
 end, { desc = 'Recherche C:/ et D:/' })
 
 

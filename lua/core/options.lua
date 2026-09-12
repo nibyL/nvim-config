@@ -1,12 +1,11 @@
 -- ============================================================================
 -- FIX WINDOWS (À placer tout en haut)
 -- ============================================================================
--- Redirige les fichiers temporaires vers un dossier sans espaces.
--- Indispensable pour que le compilateur C (MinGW/GCC) de Treesitter fonctionne
--- avec votre nom d'utilisateur "HP ELITE BOOK".
-vim.env.TMP = 'C:\\Temp'
-vim.env.TEMP = 'C:\\Temp'
-vim.fn.mkdir('C:\\Temp', 'p')
+-- Redirige les fichiers temporaires de Neovim vers un dossier dédié sous C:\Temp
+vim.env.TMP = 'C:\\Temp\\NvimTemp'
+vim.env.TEMP = 'C:\\Temp\\NvimTemp'
+-- Crée le dossier de base. Neovim créera automatiquement son sous-dossier '\nvim' dedans.
+vim.fn.mkdir('C:\\Temp\\NvimTemp', 'p')
 -- Forcer l'utilisation de Clang pour Treesitter (MinGW échoue sur les .so)
 vim.env.CC = 'C:/Program Files/LLVM/bin/clang.exe'
 
@@ -59,14 +58,14 @@ vim.api.nvim_set_hl(0, 'NormalFloat', { bg = fallback_bg_float })
 
 -- 4. LA MAGIE : Réapplique ces couleurs si le thème par défaut essaie de les rendre transparentes
 vim.api.nvim_create_autocmd('ColorScheme', {
-  desc = 'Forcer le fond coloré même avec le thème par défaut',
-  callback = function()
-    -- On vérifie si aucun thème personnalisé n'est chargé
-    if vim.g.colors_name == nil or vim.g.colors_name == 'default' then
-      vim.api.nvim_set_hl(0, 'Normal', { bg = fallback_bg_main })
-      vim.api.nvim_set_hl(0, 'NormalFloat', { bg = fallback_bg_float })
-    end
-  end,
+    desc = 'Forcer le fond coloré même avec le thème par défaut',
+    callback = function()
+        -- On vérifie si aucun thème personnalisé n'est chargé
+        if vim.g.colors_name == nil or vim.g.colors_name == 'default' then
+            vim.api.nvim_set_hl(0, 'Normal', { bg = fallback_bg_main })
+            vim.api.nvim_set_hl(0, 'NormalFloat', { bg = fallback_bg_float })
+        end
+    end,
 })
 
 
@@ -87,5 +86,5 @@ vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
 -- ============================================================================
 local choco_path = 'C:\\ProgramData\\chocolatey\\bin'
 if vim.fn.isdirectory(choco_path) == 1 then
-  vim.env.PATH = choco_path .. ';' .. vim.env.PATH
+    vim.env.PATH = choco_path .. ';' .. vim.env.PATH
 end
