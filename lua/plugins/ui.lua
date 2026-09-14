@@ -60,10 +60,7 @@ require("snacks").setup({
 })
 
 
--- ============================================================
 -- Correctif : Snacks Terminal + :restart
--- ============================================================
-
 vim.api.nvim_create_autocmd("QuitPre", {
   desc = "Fix Snacks terminal pour :restart",
   callback = function()

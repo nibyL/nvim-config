@@ -71,23 +71,27 @@ end, { desc = 'Sélecteur de thème' })
 
 
 -- ============================================================================
--- GESTION DES DOSSIERS ET FICHIERS (Recherche, formatage,)
+-- GESTION DES DOSSIERS ET FICHIERS (Recherche, formatage, sélecteur)
 -- ============================================================================
 
+-- Ctrl+A : sélectionner tout le fichier
+vim.keymap.set("n", "<C-a>", "ggVG", {
+    desc = "Sélectionner tout le fichier",
+})
+
+vim.keymap.set("i", "<C-a>", "<Esc>ggVG", {
+    desc = "Sélectionner tout le fichier",
+})
+
+vim.keymap.set({ "v", "x", "s" }, "<C-a>", "ggVG", {
+    desc = "Sélectionner tout le fichier",
+})
 --Recherche de dossiers dans l'historique des dossiers ouverts
-vim.keymap.set('n', '<leader>fd', function()
-    require('snacks').picker.recent({
-        title = "Dossiers Récents",
-        confirm = function(picker, item)
-            picker:close()
-            if item then vim.cmd('cd ' .. vim.fn.fnameescape(item.file)) end
-        end,
-        transform = function(item, ctx)
-            item.file = vim.fn.fnamemodify(item.file, ":h")
-            return require("snacks.picker.transform").unique_file(item, ctx)
-        end,
-    })
-end, { desc = "Historique des dossiers" })
+vim.keymap.set("n", "<leader>fd", function()
+    require("utils.directory_history").pick()
+end, {
+    desc = "Historique des dossiers visités",
+})
 
 
 --Recherche de fichiers dans le projet courant et l'historique des fichiers ouverts
@@ -114,7 +118,8 @@ vim.keymap.set('n', '<leader>fo', function()
 end, { desc = 'Fichiers (Projet + Historique)' })
 
 -- Recherche de texte dans tout le projet (grep)
-vim.keymap.set('n', '<leader>sg', function() local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
+vim.keymap.set('n', '<leader>sg', function()
+    local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
     require('snacks').picker.grep({
         cwd = root,
     })
