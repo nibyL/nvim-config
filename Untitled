@@ -1,0 +1,56 @@
+local function add_directory_to_history(dir)
+    -- ':p' ajoute le chemin absolu, ':h' retire le slash/antislash final s'il existe
+    dir = vim.fn.fnamemodify(dir, ":p:h")
+
+    -- Supprimer l'ancien emplacement s'il existe déjà
+    for i = #directory_history, 1, -1 do
+        if directory_history[i] == dir then
+            table.remove(directory_history, i)
+        end
+    end
+
+    -- Le plus récent est toujours en première position
+    table.insert(directory_history, 1, dir)
+
+    -- Limiter l'historique à 100 dossiers
+    while #directory_history > 100 do
+        table.remove(directory_history)
+    end
+
+    save_directory_history()
+end
+
+-- ============================================================================
+-- <leader>fd : DOSSIERS VISITÉS (Optimisé pour Snacks Picker)
+-- ============================================================================
+
+vim.keymap.set("n", "<leader>fd", function()
+    local items = {}
+
+    for _, dir in ipairs(directory_history) do
+        if vim.fn.isdirectory(dir) == 1 then
+            table.insert(items, {
+                text = dir,
+                -- 'file' permet à Snacks de savoir qu'il s'agit d'un chemin d'accès
+                file = dir, 
+            })
+        end
+    end
+
+    require("snacks").picker({
+        title = "Dossiers visités",
+        items = items,
+        -- 'dir' est plus adapté ici que 'file' pour que l'icône de dossier s'affiche nativement
+        format = "dir", 
+        confirm = function(picker, item)
+            picker:close()
+            if item and item.file then
+                vim.cmd("cd " .. vim.fn.fnameescape(item.file))
+                -- Optionnel : Affiche une notification claire du changement
+                vim.notify("Workspace ➔ " .. item.file, vim.log.levels.INFO, { title = "CD" })
+            end
+        end,
+    })
+end, {
+    desc = "Historique des dossiers visités",
+})
