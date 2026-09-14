@@ -25,9 +25,24 @@ require('gitsigns').setup({})
 -- ============================================================================
 
 require("snacks").setup({
+    terminal = {
+        enabled = true,
+        win = {
+            keys = {
+                term_normal = {
+                    "<Esc>",
+                    "<C-\\><C-n>",
+                    mode = "t",
+                    desc = "Quitter le mode terminal",
+                },
+            },
+        },
+    },
+
+
     picker = {
         enabled = true,
-        hidden = true, -- Affiche les fichiers cachés (.vscode, etc.)
+        hidden = true,  -- Affiche les fichiers cachés (.vscode, etc.)
         ignored = true, -- Affiche les fichiers du .gitignore (.venv, etc.)
 
         -- On supprime la variable de tableau dynamique d'ici
@@ -42,6 +57,35 @@ require("snacks").setup({
             }
         },
     },
+})
+
+
+-- ============================================================
+-- Correctif : Snacks Terminal + :restart
+-- ============================================================
+
+vim.api.nvim_create_autocmd("QuitPre", {
+  desc = "Fix Snacks terminal pour :restart",
+  callback = function()
+    if vim.v.exitreason ~= "restart" and vim.v.exitreason ~= "restart!" then
+      return
+    end
+
+    local snacks = require("snacks")
+
+    for _, terminal in ipairs(snacks.terminal.list()) do
+      if terminal.augroup then
+        local autocmds = vim.api.nvim_get_autocmds({
+          group = terminal.augroup,
+          event = "ExitPre",
+        })
+
+        for _, autocmd in ipairs(autocmds) do
+          pcall(vim.api.nvim_del_autocmd, autocmd.id)
+        end
+      end
+    end
+  end,
 })
 
 

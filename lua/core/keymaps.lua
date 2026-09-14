@@ -6,13 +6,10 @@
 -- TERMINAL
 -- ============================================================================
 
--- Échap pour quitter le mode Terminal
-vim.keymap.set(
-    't',
-    '<Esc>',
-    '<C-\\><C-n>',
-    { desc = 'Quitter le mode terminal' }
-)
+-- TERMINAL SNACKS (Terminal flottant ultra-moderne)
+vim.keymap.set({ 'n', 't' }, '<leader>tt', function()
+    require('snacks').terminal.toggle()
+end, { desc = 'Terminal flottant (Toggle)' })
 
 -- ============================================================================
 -- NAVIGATION ENTRE LES FENÊTRES
@@ -72,13 +69,6 @@ end, { desc = 'Sélecteur de thème' })
 
 
 
--- ============================================================================
--- TERMINAL SNACKS (Terminal flottant ultra-moderne)
--- ============================================================================
-vim.keymap.set({ 'n', 't' }, '<leader>tt', function()
-    require('snacks').terminal.toggle()
-end, { desc = 'Terminal flottant (Toggle)' })
-
 
 -- ============================================================================
 -- GESTION DES DOSSIERS ET FICHIERS (Recherche, formatage,)
@@ -102,12 +92,32 @@ end, { desc = "Historique des dossiers" })
 
 --Recherche de fichiers dans le projet courant et l'historique des fichiers ouverts
 vim.keymap.set('n', '<leader>fo', function()
-    require('snacks').picker('hybrid')
+    local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
+
+    require('snacks').picker({
+        title = "📂 Projet + 🌍 Historique Global",
+
+        multi = {
+            {
+                source = "files",
+                cwd = root,
+            },
+            {
+                source = "recent",
+            },
+        },
+
+        transform = function(item, ctx)
+            return require("snacks.picker.transform").unique_file(item, ctx)
+        end,
+    })
 end, { desc = 'Fichiers (Projet + Historique)' })
 
 -- Recherche de texte dans tout le projet (grep)
-vim.keymap.set('n', '<leader>sg', function()
-    require('snacks').picker.grep()
+vim.keymap.set('n', '<leader>sg', function() local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
+    require('snacks').picker.grep({
+        cwd = root,
+    })
 end, { desc = 'Chercher du texte dans le projet' })
 
 -- Sélecteur de buffers ouverts (quand vous avez 10+ fichiers)
