@@ -10,42 +10,47 @@ vim.cmd('packadd! nohlsearch')
 -- ============================================================================
 
 vim.pack.add({
-  -- --------------------------------------------------------------------------
-  -- LSP
-  -- --------------------------------------------------------------------------
+    -- --------------------------------------------------------------------------
+    -- LSP
+    -- --------------------------------------------------------------------------
 
-  'https://github.com/neovim/nvim-lspconfig',
+    'https://github.com/neovim/nvim-lspconfig',
 
-  -- --------------------------------------------------------------------------
-  -- Interface & outils
-  -- --------------------------------------------------------------------------
+    -- --------------------------------------------------------------------------
+    -- Interface & outils
+    -- --------------------------------------------------------------------------
 
-  'https://github.com/folke/snacks.nvim',
-  'https://github.com/rachartier/tiny-inline-diagnostic.nvim',
-  'https://github.com/stevearc/quicker.nvim',
-  'https://github.com/lewis6991/gitsigns.nvim',
-  'https://github.com/windwp/nvim-autopairs',
-  'https://codeberg.org/andyg/leap.nvim',
+    'https://github.com/folke/snacks.nvim',
+    'https://github.com/rachartier/tiny-inline-diagnostic.nvim',
+    'https://github.com/stevearc/quicker.nvim',
+    'https://github.com/lewis6991/gitsigns.nvim',
+    'https://github.com/windwp/nvim-autopairs',
+    'https://codeberg.org/andyg/leap.nvim',
 
-  -- --------------------------------------------------------------------------
-  -- Syntaxe
-  -- --------------------------------------------------------------------------
+    -- --------------------------------------------------------------------------
+    -- Syntaxe
+    -- --------------------------------------------------------------------------
 
-  'https://github.com/nvim-treesitter/nvim-treesitter',
+    'https://github.com/nvim-treesitter/nvim-treesitter',
 
-  -- --------------------------------------------------------------------------
-  -- Autocomplétion
-  -- --------------------------------------------------------------------------
+    -- --------------------------------------------------------------------------
+    -- Autocomplétion
+    -- --------------------------------------------------------------------------
 
-  'https://github.com/saghen/blink.lib',
-  'https://github.com/saghen/blink.cmp',
+    'https://github.com/saghen/blink.lib',
+    'https://github.com/saghen/blink.cmp',
 
-  -- --------------------------------------------------------------------------
-  -- Thème
-  -- --------------------------------------------------------------------------
+    -- --------------------------------------------------------------------------
+    -- Thème
+    -- --------------------------------------------------------------------------
 
-  'https://github.com/D0nw0r/dark2026.nvim',
-  'https://github.com/Mofiqul/dracula.nvim',
-  'https://github.com/folke/tokyonight.nvim',
-  'https://github.com/Mofiqul/vscode.nvim',
+    'https://github.com/D0nw0r/dark2026.nvim',
+    'https://github.com/Mofiqul/dracula.nvim',
+    'https://github.com/folke/tokyonight.nvim',
+    'https://github.com/Mofiqul/vscode.nvim',
+
+    -- --------------------------------------------------------------------------
+    -- Vrai aperçu Markdown en temps réel (Navigateur Web)
+    -- --------------------------------------------------------------------------
+    'https://github.com/iamcco/markdown-preview.nvim',
 })

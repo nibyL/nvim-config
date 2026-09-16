@@ -50,7 +50,19 @@ require("snacks").setup({
             hybrid = {
                 name = "hybrid",
                 title = "📂 Projet + 🌍 Historique Global",
-                multi = { "files", "recent" },
+
+                multi = {
+                    {
+                        source = "files",
+                        cwd = function()
+                            return vim.fs.root(0, ".git") or vim.fn.getcwd()
+                        end,
+                    },
+                    {
+                        source = "recent",
+                    },
+                },
+
                 transform = function(item, ctx)
                     return require("snacks.picker.transform").unique_file(item, ctx)
                 end,
@@ -60,29 +72,42 @@ require("snacks").setup({
 })
 
 
--- Correctif : Snacks Terminal + :restart
-vim.api.nvim_create_autocmd("QuitPre", {
-  desc = "Fix Snacks terminal pour :restart",
-  callback = function()
-    if vim.v.exitreason ~= "restart" and vim.v.exitreason ~= "restart!" then
-      return
-    end
 
-    local snacks = require("snacks")
+-- ============================================================================
+-- SNACKS + :RESTART
+-- ============================================================================
 
-    for _, terminal in ipairs(snacks.terminal.list()) do
-      if terminal.augroup then
-        local autocmds = vim.api.nvim_get_autocmds({
-          group = terminal.augroup,
-          event = "ExitPre",
-        })
+vim.api.nvim_create_autocmd("ExitPre", {
+    desc = "Préparer Snacks avant :restart",
+    callback = function()
+        if not vim.v.exitreason:match("^restart") then return end
 
-        for _, autocmd in ipairs(autocmds) do
-          pcall(vim.api.nvim_del_autocmd, autocmd.id)
+        local snacks = require("snacks")
+
+        -- 1. GESTION DE L'EXPLORER : Enregistrer la présence du volet
+        local exp = snacks.explorer
+        vim.g.snacks_explorer_was_open = (exp.win and exp.win:is_valid()) or false
+
+        if vim.g.snacks_explorer_was_open then
+            local exp_buf = exp.win:get_buf()
+            snacks.explorer.close()
+            if vim.api.nvim_buf_is_valid(exp_buf) then
+                pcall(vim.api.nvim_buf_delete, exp_buf, { force = true })
+            end
         end
-      end
-    end
-  end,
+
+        -- 2. GESTION DES TERMINAUX : [VOTRE CODE STRICT POUR LES TERMINAUX]
+        for _, term in ipairs(snacks.terminal.list()) do
+            if term.augroup then
+                for _, ac in ipairs(vim.api.nvim_get_autocmds({
+                    group = term.augroup,
+                    event = "ExitPre",
+                })) do
+                    pcall(vim.api.nvim_del_autocmd, ac.id)
+                end
+            end
+        end
+    end,
 })
 
 
@@ -105,3 +130,19 @@ if not ok then
     vim.cmd.colorscheme('habamax')
     vim.notify('Thème ' .. saved_theme .. ' introuvable, fallback habamax', vim.log.levels.WARN)
 end
+
+
+
+-- ============================================================================
+-- MARKDOWN PREVIEW (Rendu Navigateur)
+-- ============================================================================
+-- Force Neovim à compiler le serveur interne du plugin s'il n'existe pas
+if vim.fn.exists('*mkdp#util#install') == 1 then
+  vim.fn['mkdp#util#install']()
+end
+
+-- Options de confort
+vim.g.mkdp_auto_start = 0    -- 0 = Ne lance pas le navigateur tout seul à l'ouverture du fichier
+vim.g.mkdp_auto_close = 1    -- 1 = Ferme l'onglet du navigateur automatiquement quand vous quittez Neovim
+vim.g.mkdp_refresh_slow = 0  -- 0 = Rafraîchissement ultra-rapide au fil de la frappe
+vim.g.mkdp_echo_preview_url = 1

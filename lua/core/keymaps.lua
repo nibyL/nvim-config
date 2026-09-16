@@ -95,11 +95,11 @@ end, {
 
 
 --Recherche de fichiers dans le projet courant et l'historique des fichiers ouverts
-vim.keymap.set('n', '<leader>fo', function()
-    local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
+vim.keymap.set('n', '<leader>ff', function()
+    local root = vim.fn.getcwd()
 
     require('snacks').picker({
-        title = "📂 Projet + 🌍 Historique Global",
+        title = "📂 Dossier courant + 🌍 Historique Global",
 
         multi = {
             {
@@ -115,7 +115,7 @@ vim.keymap.set('n', '<leader>fo', function()
             return require("snacks.picker.transform").unique_file(item, ctx)
         end,
     })
-end, { desc = 'Fichiers (Projet + Historique)' })
+end, { desc = 'Fichiers (Dossier + Historique)' })
 
 -- Recherche de texte dans tout le projet (grep)
 vim.keymap.set('n', '<leader>sg', function()
@@ -164,21 +164,36 @@ end, { desc = 'Recherche C:/ et D:/' })
 vim.keymap.set('n', '<leader>fD', function()
     require('snacks').picker({
         title = "Dossiers (C: & D:)",
-        dirs = { 'C:/', 'D:/' },
-        -- On utilise directement le moteur de recherche de fichiers
-        finder = "files",
-        -- On force fd à lister uniquement les dossiers (-td) et à appliquer vos exclusions
-        cmd = "fd",
-        args = { '-td', '-E', '.git', '-E', 'node_modules', '-E', 'AppData' },
-        -- Snacks gère nativement le changement de répertoire avec l'action cd
-        actions = {
-            ["confirm"] = function(picker, item)
-                picker:close()
-                if item and item.text then
-                    vim.cmd('cd ' .. vim.fn.fnameescape(item.text))
-                end
-            end,
-        },
+        format = "file",
+
+        finder = function(_, ctx)
+            return require("snacks.picker.source.proc").proc(
+                ctx:opts({
+                    cmd = "fd",
+                    args = {
+                        "--type", "d",
+                        "--color", "never",
+                        "-E", ".git",
+                        "-E", "node_modules",
+                        "-E", "AppData",
+                        ".",
+                        "C:/",
+                        "D:/",
+                    },
+                    transform = function(item)
+                        item.file = item.text
+                    end,
+                }),
+                ctx
+            )
+        end,
+
+        confirm = function(picker, item)
+            picker:close()
+            if item and item.file then
+                vim.cmd("cd " .. vim.fn.fnameescape(item.file))
+            end
+        end,
     })
 end, { desc = "Changer dossier (C/D)" })
 
@@ -192,3 +207,56 @@ vim.keymap.set('n', '<leader>q', ':bd<CR>', { desc = 'Fermer le buffer' })
 vim.keymap.set('n', '<leader>lg', function()
     require('snacks').lazygit()
 end, { desc = 'Ouvrir Lazygit' })
+
+
+
+-- ============================================================================
+-- RACCOURCI APERÇU MARKDOWN (NAVIGATEUR)
+-- ============================================================================
+-- création de fichier html par pandoc
+vim.keymap.set('n', '<leader>mp', function()
+    local file = vim.fn.expand('%:p')
+    local ext = vim.fn.expand('%:e'):lower()
+
+    if ext ~= 'md' and ext ~= 'markdown' then
+        vim.notify('Ce fichier n’est pas du Markdown', vim.log.levels.WARN, {
+            title = 'Pandoc',
+        })
+        return
+    end
+
+    local output = vim.fn.expand('%:p:r') .. '.html'
+
+    vim.fn.jobstart({
+        'pandoc',
+        file,
+        '-o', output,
+        '--standalone',
+        '--embed-resources',
+        '--highlight-style=tango',
+    }, {
+        on_exit = function(_, code)
+            if code ~= 0 then
+                vim.notify('Échec de la conversion Pandoc', vim.log.levels.ERROR, {
+                    title = 'Pandoc',
+                })
+                return
+            end
+
+            -- Ouvre le HTML avec l'application associée à .html
+            vim.fn.jobstart({ 'explorer.exe', output }, { detach = true })
+
+            vim.notify(
+                'Aperçu Pandoc généré : ' .. vim.fn.fnamemodify(output, ':t'),
+                vim.log.levels.INFO,
+                { title = 'Pandoc' }
+            )
+        end,
+    })
+end, { desc = 'Aperçu Markdown avec Pandoc' })
+
+
+-- rendu live via Markdown-preview.nvim
+vim.keymap.set('n', '<leader>md', function()
+    vim.cmd('MarkdownPreviewToggle')
+end, { desc = 'Aperçu Markdown navigateur' })
