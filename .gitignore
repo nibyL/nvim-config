@@ -15,5 +15,4 @@ Thumbs.db
 # fichier neovim inutils
 *.dll
 *.toml
-nvim-pack-lock.json
 *.zip

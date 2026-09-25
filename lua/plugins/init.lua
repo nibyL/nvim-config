@@ -49,8 +49,4 @@ vim.pack.add({
     'https://github.com/folke/tokyonight.nvim',
     'https://github.com/Mofiqul/vscode.nvim',
 
-    -- --------------------------------------------------------------------------
-    -- Vrai aperçu Markdown en temps réel (Navigateur Web)
-    -- --------------------------------------------------------------------------
-    'https://github.com/iamcco/markdown-preview.nvim',
 })

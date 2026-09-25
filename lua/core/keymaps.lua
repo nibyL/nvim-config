@@ -149,53 +149,104 @@ vim.keymap.set('n', '<leader>fm', function()
     vim.lsp.buf.format({ async = true })
 end, { desc = 'Formater le code' })
 
--- Recherche de fichiers dans tout le disque pour ouvrir un fichier pour la toute première fois dans néovim
+-- Recherche de fichiers sur tout le disque (racines détectées dynamiquement)
 vim.keymap.set('n', '<leader>fR', function()
+    local roots = require('utils.env').get_disk_roots()
+    if #roots == 0 then
+        vim.notify('Aucune racine disque trouvée', vim.log.levels.WARN)
+        return
+    end
+
     require('snacks').picker.files({
-        -- Définir les dossiers racines à scanner simultanément
-        dirs = { 'C:/', 'D:/' },
-        -- Vos options de filtrage fd restent inchangées
-        find_command = { 'fd', '-tf', '-E', '.git', '-E', 'node_modules', '-E', '*.exe', '-E', '*.dll' },
+        dirs = roots,
+        find_command = {
+            'fd', '-tf',
+            '-E', '.git',
+            '-E', 'node_modules',
+            '-E', '*.exe',
+            '-E', '*.dll',
+        },
     })
-end, { desc = 'Recherche C:/ et D:/' })
+end, { desc = 'Recherche fichiers (disques)' })
 
 
--- Recherche de dossiers dans tout le disque pour ouvrir un dossiers pour la toute première fois dans néovim
+-- Recherche de dossiers sur tout le disque (racines détectées dynamiquement)
 vim.keymap.set('n', '<leader>fD', function()
-    require('snacks').picker({
-        title = "Dossiers (C: & D:)",
-        format = "file",
+    local roots = require('utils.env').get_disk_roots()
+    if #roots == 0 then
+        vim.notify('Aucune racine disque trouvée', vim.log.levels.WARN)
+        return
+    end
 
-        finder = function(_, ctx)
-            return require("snacks.picker.source.proc").proc(
-                ctx:opts({
-                    cmd = "fd",
-                    args = {
-                        "--type", "d",
-                        "--color", "never",
-                        "-E", ".git",
-                        "-E", "node_modules",
-                        "-E", "AppData",
-                        ".",
-                        "C:/",
-                        "D:/",
-                    },
-                    transform = function(item)
-                        item.file = item.text
-                    end,
-                }),
-                ctx
-            )
-        end,
+    local all_items = {}
+    local pending = #roots
 
-        confirm = function(picker, item)
-            picker:close()
-            if item and item.file then
-                vim.cmd("cd " .. vim.fn.fnameescape(item.file))
-            end
-        end,
-    })
-end, { desc = "Changer dossier (C/D)" })
+    -- Options fd communes
+    local fd_args = {
+        '--type', 'd',
+        '--color', 'never',
+        '--exclude', '.git',
+        '--exclude', 'node_modules',
+        '--exclude', 'AppData',
+        '--exclude', 'Windows',
+        '--exclude', 'Program Files',
+        '--exclude', 'Program Files (x86)',
+        '--exclude', '$Recycle.Bin',
+        '--exclude', 'System Volume Information',
+        '--exclude', 'DumpStack.log',
+        '--exclude', 'pagefile.sys',
+        '--exclude', 'hiberfil.sys',
+        '--exclude', 'swapfile.sys',
+        '.',
+    }
+
+    -- Lance fd en parallèle sur chaque disque
+    for _, root in ipairs(roots) do
+        local r = root
+        vim.fn.jobstart(
+            vim.list_extend({ 'fd' }, fd_args),
+            {
+                cwd = r,
+                stdout_buffered = true,
+                on_stdout = function(_, data)
+                    if not data then return end
+                    for _, line in ipairs(data) do
+                        if line ~= '' then
+                            table.insert(all_items, {
+                                text = line,
+                                file = vim.fs.joinpath(r, line),
+                            })
+                        end
+                    end
+                end,
+                on_exit = function()
+                    pending = pending - 1
+                    if pending == 0 then
+                        -- Tous les fd sont finis → ouvre le picker
+                        vim.schedule(function()
+                            if #all_items == 0 then
+                                vim.notify('Aucun dossier trouvé', vim.log.levels.WARN)
+                                return
+                            end
+
+                            require('snacks').picker({
+                                title = 'Dossiers (' .. table.concat(roots, ', ') .. ')',
+                                items = all_items,
+                                format = 'file',
+                                confirm = function(picker, item)
+                                    picker:close()
+                                    if item and item.file then
+                                        vim.cmd('cd ' .. vim.fn.fnameescape(item.file))
+                                    end
+                                end,
+                            })
+                        end)
+                    end
+                end,
+            }
+        )
+    end
+end, { desc = 'Changer dossier (tous disques)' })
 
 
 -- Fermer le buffer actuel (sans fermer Neovim)
@@ -256,7 +307,9 @@ vim.keymap.set('n', '<leader>mp', function()
 end, { desc = 'Aperçu Markdown avec Pandoc' })
 
 
--- rendu live via Markdown-preview.nvim
-vim.keymap.set('n', '<leader>md', function()
-    vim.cmd('MarkdownPreviewToggle')
-end, { desc = 'Aperçu Markdown navigateur' })
+-- ============================================================================
+-- RACCOURCIS POUR LES COMMENTAIRES (Natif Neovim 0.10+)
+-- ============================================================================
+
+vim.keymap.set('n', '<leader>/', 'gcc', { remap = true, desc = 'Commenter la ligne' })
+vim.keymap.set('v', '<leader>/', 'gc', { remap = true, desc = 'Commenter la sélection' })

@@ -2,28 +2,53 @@
 -- Neovim 0.12+ - Configuration personnelle (Chef d'orchestre)
 -- ============================================================================
 
--- 1. CORE (Options, Raccourcis, Autocmds, Statusline)
-require('core.options')
-require('core.keymaps')
-require('core.autocmds')
-require('core.statusline')
+local safe   = require('utils.safe')
+local notify = require('utils.notify')
 
--- 2. PLUGINS (Installation et configuration visuelle)
-require('plugins.init')
-require('plugins.ui')       -- <-- C'est ici que dark2026 sera activé
-require('plugins.diagnostics')
-require('plugins.treesitter')
-require('plugins.blink')
+-- ----------------------------------------------------------------------------
+-- Déclaration des modules par criticité
+-- ----------------------------------------------------------------------------
 
--- 3. LSP (Dépend de blink.cmp et des plugins)
-require('lsp')
+local CORE_MODULES = {
+  'core.options',
+  'core.keymaps',
+  'core.autocmds',
+  'core.statusline',
+}
 
--- 4. OUTILS (Fonctions personnalisées)
-require('tools.autosave')
-require('tools.compiler')
-require('tools.leap')
+local PLUGIN_MODULES = {
+  'plugins.init',
+  'plugins.ui',
+  'plugins.diagnostics',
+  'plugins.treesitter',
+  'plugins.blink',
+}
 
--- ============================================================================
--- FIN
--- ============================================================================
-vim.notify('Configuration chargée avec succès ! 🚀', vim.log.levels.INFO)
+local TOOL_MODULES = {
+  'tools.autosave',
+  'tools.compiler',
+  'tools.leap',
+}
+
+-- ----------------------------------------------------------------------------
+-- Chargement
+-- ----------------------------------------------------------------------------
+
+for _, mod in ipairs(CORE_MODULES) do
+  safe.require(mod, { optional = false })
+end
+
+for _, mod in ipairs(PLUGIN_MODULES) do
+  safe.require(mod, { optional = true })
+end
+
+-- LSP dépend de blink.cmp → chargé après les plugins
+-- safe.require('lsp', { optional = false })
+
+for _, mod in ipairs(TOOL_MODULES) do
+  safe.require(mod, { optional = true })
+end
+
+notify.info('Configuration chargée avec succès ! 🚀')
+
+
