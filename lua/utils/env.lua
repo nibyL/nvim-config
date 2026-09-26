@@ -99,6 +99,7 @@ function M.setup_path()
     extras = {
       'C:\\ProgramData\\chocolatey\\bin',
       vim.fn.expand('$USERPROFILE') .. '\\scoop\\shims',
+      vim.fn.expand('$LOCALAPPDATA') .. '\\Microsoft\\WindowsApps',
     }
   elseif M.is_macos then
     extras = {
@@ -120,16 +121,19 @@ end
 -- ----------------------------------------------------------------------------
 function M.setup_shell()
   if M.is_windows then
-    local pwsh = M.find_executable('pwsh', {
-      'C:/Program Files/PowerShell/7/pwsh.exe',
-    })
-    if pwsh then
-      vim.o.shell        = pwsh
-      vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
-    else
-      vim.o.shell        = 'powershell'
-      vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
+    -- Chercher pwsh avec where.exe (détecte WindowsApps)
+    local pwsh
+    local result = vim.fn.system({ 'where.exe', 'pwsh' })
+    if vim.v.shell_error == 0 and result ~= '' then
+      pwsh = vim.split(result, '\n')[1]:gsub('\r', '')
     end
+
+    if pwsh then
+      vim.o.shell = pwsh
+    else
+      vim.o.shell = 'powershell'
+    end
+    vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
   else
     vim.o.shell = vim.env.SHELL or 'bash'
   end

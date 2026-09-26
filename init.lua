@@ -49,6 +49,15 @@ for _, mod in ipairs(TOOL_MODULES) do
   safe.require(mod, { optional = true })
 end
 
+-- ============================================================================
+-- USER COMMANDS
+-- ============================================================================
+
+vim.api.nvim_create_user_command('CheckConfig', function()
+  vim.cmd('checkhealth monprofil')
+end, { desc = 'Check Neovim configuration' })
+
+
 notify.info('Configuration chargée avec succès ! 🚀')
 
 
