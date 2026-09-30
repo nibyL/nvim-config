@@ -1,7 +1,0 @@
-# Cette condition empêche STRICTEMENT PSReadLine de se charger SI on est dans Neovim,
-# évitant ainsi le gel complet du terminal.
-if (-not $env:NVIM) {
-    if (Get-Module -ListAvailable -Name PSReadLine) {
-        Import-Module PSReadLine
-    }
-}

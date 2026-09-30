@@ -16,3 +16,14 @@ Thumbs.db
 *.dll
 *.toml
 *.zip
+
+# Fichiers de profil et backup
+$PROFILE.txt
+*.bak
+*.old
+*.disabled
+
+# Dossiers résiduels
+after/
+plugin/
+sysinit.vim
