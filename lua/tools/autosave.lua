@@ -2,10 +2,7 @@
 -- SAUVEGARDE AUTOMATIQUE
 -- ============================================================================
 
-local autosave_group = vim.api.nvim_create_augroup(
-  'AutosaveGroup',
-  { clear = true }
-)
+local autosave_group = vim.api.nvim_create_augroup('AutosaveGroup', { clear = true })
 
 local save_timers = {}
 
@@ -53,29 +50,26 @@ end
 -- SAUVEGARDE APRÈS 1 SECONDE D'INACTIVITÉ
 -- ============================================================================
 
-vim.api.nvim_create_autocmd(
-  { 'TextChanged', 'TextChangedI' },
-  {
-    group = autosave_group,
-    desc = 'Sauvegarde automatique après inactivité',
+vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
+  group = autosave_group,
+  desc = 'Sauvegarde automatique après inactivité',
 
-    callback = function()
-      local buf = vim.api.nvim_get_current_buf()
+  callback = function()
+    local buf = vim.api.nvim_get_current_buf()
 
-      -- Annuler le timer précédent pour ce buffer
-      if save_timers[buf] then
-        save_timers[buf]:stop()
-        save_timers[buf] = nil
-      end
+    -- Annuler le timer précédent pour ce buffer
+    if save_timers[buf] then
+      save_timers[buf]:stop()
+      save_timers[buf] = nil
+    end
 
-      -- Nouveau timer de 1 seconde
-      save_timers[buf] = vim.defer_fn(function()
-        safe_save(buf)
-        save_timers[buf] = nil
-      end, 1000)
-    end,
-  }
-)
+    -- Nouveau timer de 1 seconde
+    save_timers[buf] = vim.defer_fn(function()
+      safe_save(buf)
+      save_timers[buf] = nil
+    end, 1000)
+  end,
+})
 
 -- ============================================================================
 -- SAUVEGARDE À LA PERTE DE FOCUS

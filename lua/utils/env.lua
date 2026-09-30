@@ -11,11 +11,11 @@ local M = {}
 -- DÉTECTION OS
 -- ----------------------------------------------------------------------------
 local uname = vim.uv.os_uname().sysname
-M.os        = uname
+M.os = uname
 M.is_windows = uname:find('Windows') ~= nil
-M.is_linux   = uname == 'Linux'
-M.is_macos   = uname == 'Darwin'
-M.is_wsl     = false
+M.is_linux = uname == 'Linux'
+M.is_macos = uname == 'Darwin'
+M.is_wsl = false
 
 if M.is_linux then
   local ok, lines = pcall(vim.fn.readfile, '/proc/version')
@@ -32,9 +32,13 @@ end
 --- @param candidates? string[]
 --- @return string|nil
 function M.find_executable(name, candidates)
-  if vim.fn.executable(name) == 1 then return name end
+  if vim.fn.executable(name) == 1 then
+    return name
+  end
   for _, path in ipairs(candidates or {}) do
-    if vim.fn.executable(path) == 1 then return path end
+    if vim.fn.executable(path) == 1 then
+      return path
+    end
   end
   return nil
 end
@@ -56,13 +60,12 @@ function M.setup_tempdir()
   vim.fn.mkdir(base, 'p')
   vim.fn.mkdir(nvim_dir, 'p')
 
-  vim.env.TMP  = base
+  vim.env.TMP = base
   vim.env.TEMP = base
 
   M.tempdir = base
   return base
 end
-
 
 function M.ensure_snacks_dir()
   local dir = vim.fn.stdpath('data') .. '/nvim'
@@ -121,19 +124,13 @@ end
 -- ----------------------------------------------------------------------------
 function M.setup_shell()
   if M.is_windows then
-    -- Chercher pwsh avec where.exe (détecte WindowsApps)
-    local pwsh
-    local result = vim.fn.system({ 'where.exe', 'pwsh' })
-    if vim.v.shell_error == 0 and result ~= '' then
-      pwsh = vim.split(result, '\n')[1]:gsub('\r', '')
-    end
-
-    if pwsh then
-      vim.o.shell = pwsh
-    else
-      vim.o.shell = 'powershell'
-    end
-    vim.o.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command'
+    -- On laisse Neovim utiliser la valeur par défaut du système pour le shell général
+    vim.o.shell = 'cmd.exe'
+    vim.o.shellcmdflag = '/c'
+    vim.o.shellredir = '2>&1 > %s'
+    vim.o.shellpipe = '2>&1 > %s'
+    vim.o.shellquote = ''
+    vim.o.shellxquote = ''
   else
     vim.o.shell = vim.env.SHELL or 'bash'
   end

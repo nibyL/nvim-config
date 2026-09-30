@@ -127,9 +127,7 @@ local function status_mode()
     S = 'StatusModeVisual',
   }
 
-  return '%#' .. (groups[mode] or 'StatusModeNormal') .. '#'
-    .. (names[mode] or ' NORMAL ')
-    .. '%*'
+  return '%#' .. (groups[mode] or 'StatusModeNormal') .. '#' .. (names[mode] or ' NORMAL ') .. '%*'
 end
 
 -- ============================================================================
@@ -143,15 +141,15 @@ local function status_diagnostics()
   local warnings = counts[vim.diagnostic.severity.WARN] or 0
 
   local result = ''
-  
+
   if errors > 0 then
     result = result .. '%#StatusDiagnosticError# E:' .. errors .. '%*'
   end
-  
+
   if warnings > 0 then
     result = result .. '%#StatusDiagnosticWarn# W:' .. warnings .. '%*'
   end
-  
+
   return result
 end
 
@@ -166,24 +164,14 @@ local function status_filename()
     filename = '[No Name]'
   end
 
-  local result =
-    '%#StatusFile#'
-    .. ' '
-    .. filename
-    .. ' '
+  local result = '%#StatusFile#' .. ' ' .. filename .. ' '
 
   if vim.bo.modified then
-    result =
-      result
-      .. '%#StatusModified#'
-      .. '[+]'
-      .. '%*'
+    result = result .. '%#StatusModified#' .. '[+]' .. '%*'
   end
 
   if vim.bo.readonly then
-    result =
-      result
-      .. ' RO'
+    result = result .. ' RO'
   end
 
   return result .. '%*'

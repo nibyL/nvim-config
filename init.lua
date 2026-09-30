@@ -2,7 +2,7 @@
 -- Neovim 0.12+ - Configuration personnelle (Chef d'orchestre)
 -- ============================================================================
 
-local safe   = require('utils.safe')
+local safe = require('utils.safe')
 local notify = require('utils.notify')
 
 -- ----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ for _, mod in ipairs(PLUGIN_MODULES) do
 end
 
 -- LSP dépend de blink.cmp → chargé après les plugins
--- safe.require('lsp', { optional = false })
+safe.require('lsp', { optional = false })
 
 for _, mod in ipairs(TOOL_MODULES) do
   safe.require(mod, { optional = true })
@@ -57,7 +57,4 @@ vim.api.nvim_create_user_command('CheckConfig', function()
   vim.cmd('checkhealth monprofil')
 end, { desc = 'Check Neovim configuration' })
 
-
 notify.info('Configuration chargée avec succès ! 🚀')
-
-
