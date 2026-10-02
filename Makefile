@@ -1,4 +1,4 @@
-.PHONY: fmt lint check help
+.PHONY: fmt lint check test help
 
 help:
 	@echo
@@ -22,3 +22,8 @@ lint:
 check: fmt lint
 	@echo
 	@echo All checks passed.
+
+test:
+	@echo Running tests...
+	nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+	@echo Done.
