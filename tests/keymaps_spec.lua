@@ -52,10 +52,12 @@ describe('Keymaps', function()
     assert.is_not_equal('', vim.fn.maparg('H', 'n'), 'Missing keymap: H')
   end)
 
-  it('s and S are mapped for leap', function()
-    assert.is_not_equal('', vim.fn.maparg('s', 'n'), 'Missing keymap: s')
-    assert.is_not_equal('', vim.fn.maparg('S', 'n'), 'Missing keymap: S')
-  end)
+it('s and S are mapped for leap (if installed)', function()
+    if vim.fn.isdirectory(vim.fn.stdpath('data') .. '/site/pack/core/opt/leap.nvim') == 1 then
+        assert.is_not_equal('', vim.fn.maparg('s', 'n'), 'Missing keymap: s')
+        assert.is_not_equal('', vim.fn.maparg('S', 'n'), 'Missing keymap: S')
+    end
+end)
 
   it('<leader>/ is mapped for comments', function()
     local map_n = vim.fn.maparg('<leader>/', 'n')

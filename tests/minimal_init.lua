@@ -1,21 +1,20 @@
 -- ============================================================================
 -- MINIMAL INIT FOR TESTS
 -- ============================================================================
--- Charge uniquement ce qui est nécessaire pour les tests.
--- ============================================================================
 
--- Ajoute le dossier courant au runtimepath
 vim.opt.rtp:prepend('.')
-
--- Ajoute plenary pour les helpers de test
 vim.opt.rtp:prepend(vim.fn.stdpath('data') .. '/site/pack/test/start/plenary.nvim')
 
--- Charge les modules de config
+-- Charge les modules de config (core uniquement)
 require('core.options')
 require('core.keymaps')
 require('core.autocmds')
 
--- Charge les modules tools (définissent F5/F6 et s/S)
+-- Charge les tools qui NE dépendent PAS de plugins externes
 require('tools.autosave')
 require('tools.compiler')
-require('tools.leap')
+
+-- NOTE: tools.leap est chargé uniquement si leap.nvim est installé
+if vim.fn.isdirectory(vim.fn.stdpath('data') .. '/site/pack/core/opt/leap.nvim') == 1 then
+    require('tools.leap')
+end

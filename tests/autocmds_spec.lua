@@ -65,10 +65,17 @@ describe('Utils modules', function()
     assert.is_true(ok)
   end)
 
-  it('utils.env detects Windows', function()
+it('utils.env detects current OS', function()
     local env = require('utils.env')
-    assert.is_true(env.is_windows, 'Windows should be detected')
-  end)
+    local uname = vim.uv.os_uname().sysname
+    if uname:find('Windows') then
+        assert.is_true(env.is_windows, 'Windows should be detected')
+    elseif uname == 'Linux' then
+        assert.is_true(env.is_linux, 'Linux should be detected')
+    elseif uname == 'Darwin' then
+        assert.is_true(env.is_macos, 'macOS should be detected')
+    end
+end)
 
   it('utils.env.get_disk_roots returns at least one root', function()
     local env = require('utils.env')
