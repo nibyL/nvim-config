@@ -41,3 +41,6 @@ $PROFILE.txt
 after/
 plugin/
 sysinit.vim
+
+# Pandoc generated output
+*.html
