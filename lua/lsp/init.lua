@@ -76,8 +76,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- Diagnostics du buffer
     vim.keymap.set('n', '<leader>cd', vim.diagnostic.open_float, vim.tbl_extend('force', opts, { desc = 'Diagnostic flottant' }))
-    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, vim.tbl_extend('force', opts, { desc = 'Diagnostic précédent' }))
-    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, vim.tbl_extend('force', opts, { desc = 'Diagnostic suivant' }))
+    vim.keymap.set('n', '[d', function() vim.diagnostic.jump({ count = -1 }) end, vim.tbl_extend('force', opts, { desc = 'Diagnostic précédent' }))
+    vim.keymap.set('n', ']d', function() vim.diagnostic.jump({ count = 1 }) end, vim.tbl_extend('force', opts, { desc = 'Diagnostic suivant' }))
   end,
 })
 

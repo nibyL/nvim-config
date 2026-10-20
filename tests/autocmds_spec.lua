@@ -1,7 +1,7 @@
 -- ============================================================================
 -- AUTOCMDS TESTS
 -- ============================================================================
-
+if not _G.describe then return end
 describe('Autocmds', function()
   it('TextYankPost is registered', function()
     local autocmds = vim.api.nvim_get_autocmds({ event = 'TextYankPost' })
