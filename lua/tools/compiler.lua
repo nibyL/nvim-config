@@ -1,7 +1,8 @@
 -- ============================================================================
 -- COMPILATION / EXÉCUTION (C, C++, ASM via WSL | Python via Windows)
 -- ============================================================================
-local is_windows = vim.uv.os_uname().sysname:find('Windows') ~= nil
+local env = require('utils.env')
+local is_windows = env.is_windows
 
 -- ==========================================================================
 -- FONCTIONS AUXILIAIRES
@@ -58,11 +59,9 @@ local function run_in_terminal(shell_cmd, use_windows_native)
   if not job then
     local shell
     if use_windows_native then
-      -- On utilise PowerShell 7 (pwsh) ou Windows PowerShell si l'extension est Python
       shell = { vim.o.shell }
     else
-      -- On utilise WSL pour le C/C++/ASM
-      shell = is_windows and { 'wsl.exe', '-e', 'bash' } or { 'bash' }
+      shell = env.get_wsl_cmd()
     end
     vim.fn.jobstart(shell, { term = true, bufnr = buf })
   end
