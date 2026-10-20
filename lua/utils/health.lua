@@ -326,7 +326,19 @@ function M.check()
         'snacks', 'blink.cmp', 'nvim-treesitter', 'gitsigns',
         'nvim-autopairs', 'quicker', 'leap', 'tiny-inline-diagnostic',
     }) do
-        check_lua_module(p, false)
+        -- Vérification non-intrusive : ne force pas le chargement
+        local loaded = package.loaded[p] ~= nil
+        local in_rtp = #vim.api.nvim_get_runtime_file('lua/' .. p:gsub('%.', '/') .. '/init.lua', true) > 0
+            or #vim.api.nvim_get_runtime_file('lua/' .. p:gsub('%.', '/') .. '.lua', true) > 0
+            or #vim.api.nvim_get_runtime_file('plugin/' .. p:gsub('%.', '/') .. '.lua', true) > 0
+
+        if loaded then
+            vim.health.ok('✓ ' .. p .. ' (chargé)')
+        elseif in_rtp then
+            vim.health.ok('✓ ' .. p .. ' (disponible, lazy)')
+        else
+            vim.health.warn('✗ ' .. p .. ' (introuvable)')
+        end
     end
 
     -- === THEME ===

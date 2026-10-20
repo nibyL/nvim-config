@@ -1,36 +1,33 @@
 -- ============================================================================
--- DIAGNOSTICS
+-- DIAGNOSTICS (Deferred Setup)
 -- ============================================================================
 
--- ============================================================================
--- DIAGNOSTICS NATIFS DE NEOVIM
--- ============================================================================
+return function()
+  vim.schedule(function()
+    local ok, tid = pcall(require, 'tiny-inline-diagnostic')
+    if not ok then
+      return
+    end
 
-vim.diagnostic.config({
-  -- Les diagnostics seront affichés par tiny-inline-diagnostic
-  virtual_text = false,
+    -- Configuration native de Neovim (toujours dispo)
+    vim.diagnostic.config({
+      virtual_text = false,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = '●',
+          [vim.diagnostic.severity.WARN] = '●',
+          [vim.diagnostic.severity.INFO] = '●',
+          [vim.diagnostic.severity.HINT] = '●',
+        },
+      },
+    })
 
-  -- Signes dans la colonne de gauche
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = '●',
-      [vim.diagnostic.severity.WARN] = '●',
-      [vim.diagnostic.severity.INFO] = '●',
-      [vim.diagnostic.severity.HINT] = '●',
-    },
-  },
-})
-
--- ============================================================================
--- TINY INLINE DIAGNOSTIC
--- ============================================================================
-
-require('tiny-inline-diagnostic').setup({
-  options = {
-    multilines = {
-      enabled = true,
-    },
-  },
-
-  preset = 'ghost',
-})
+    -- Configuration du plugin
+    tid.setup({
+      options = {
+        multilines = { enabled = true },
+      },
+      preset = 'ghost',
+    })
+  end)
+end

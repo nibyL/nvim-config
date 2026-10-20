@@ -287,3 +287,9 @@ vim.keymap.set('n', '<leader>lg', function()
   require('snacks').lazygit()
 end, { desc = 'Ouvrir Lazygit' })
 
+-- ============================================================================
+-- RACCOURCIS POUR LES COMMENTAIRES (Natif Neovim 0.10+)
+-- ============================================================================
+
+vim.keymap.set('n', '<leader>/', 'gcc', { remap = true, desc = 'Commenter la ligne' })
+vim.keymap.set('v', '<leader>/', 'gc', { remap = true, desc = 'Commenter la sélection' })
