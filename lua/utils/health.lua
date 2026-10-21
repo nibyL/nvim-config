@@ -221,8 +221,6 @@ local function check_environment()
   end
 end
 
-
-
 -- ----------------------------------------------------------------------------
 -- SECTION : LAZY LOADING & PERFORMANCE
 -- ----------------------------------------------------------------------------
@@ -258,7 +256,9 @@ local function check_lazy_loading()
         break
       end
     end
-    if has_lazy_triggers then break end
+    if has_lazy_triggers then
+      break
+    end
   end
 
   if has_lazy_triggers then
@@ -267,7 +267,6 @@ local function check_lazy_loading()
     vim.health.info('Lazy loading : aucun déclencheur en attente (plugins déjà chargés ?)')
   end
 end
-
 
 -- ----------------------------------------------------------------------------
 -- MAIN CHECK
