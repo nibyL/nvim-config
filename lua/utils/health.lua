@@ -221,6 +221,54 @@ local function check_environment()
   end
 end
 
+
+
+-- ----------------------------------------------------------------------------
+-- SECTION : LAZY LOADING & PERFORMANCE
+-- ----------------------------------------------------------------------------
+
+local function check_lazy_loading()
+  vim.health.start('Lazy Loading & Performance')
+
+  -- 1. Vérification du temps de démarrage
+  if vim.v.startuptime then
+    local time = tonumber(vim.v.startuptime)
+    if time and time > 0 then
+      if time < 300 then
+        vim.health.ok(string.format('Temps de démarrage : %d ms (Excellent)', time))
+      elseif time < 600 then
+        vim.health.ok(string.format('Temps de démarrage : %d ms (Bon)', time))
+      else
+        vim.health.warn(string.format('Temps de démarrage : %d ms (Lent)', time))
+      end
+    end
+  else
+    vim.health.info('Temps de démarrage : non disponible (mode headless)')
+  end
+
+  -- 2. Vérification des déclencheurs (événements en attente)
+  local lazy_events = { 'BufReadPost', 'InsertEnter', 'BufEnter' }
+  local has_lazy_triggers = false
+
+  for _, event in ipairs(lazy_events) do
+    local autocmds = vim.api.nvim_get_autocmds({ event = event })
+    for _, ac in ipairs(autocmds) do
+      if ac.desc and ac.desc:match('lazyload') then
+        has_lazy_triggers = true
+        break
+      end
+    end
+    if has_lazy_triggers then break end
+  end
+
+  if has_lazy_triggers then
+    vim.health.ok('Lazy loading : déclencheurs actifs en attente')
+  else
+    vim.health.info('Lazy loading : aucun déclencheur en attente (plugins déjà chargés ?)')
+  end
+end
+
+
 -- ----------------------------------------------------------------------------
 -- MAIN CHECK
 -- ----------------------------------------------------------------------------
@@ -232,6 +280,7 @@ function M.check()
   check_version_guard()
   check_failed_modules()
   check_lockfile()
+  check_lazy_loading()
 
   -- === REQUIRED EXECUTABLES ===
   vim.health.start('Required executables')
