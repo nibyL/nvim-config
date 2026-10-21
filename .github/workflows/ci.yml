@@ -11,15 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install stylua
         run: |
           curl -L https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux-x86_64.zip -o stylua.zip
           unzip stylua.zip
           sudo mv stylua /usr/local/bin/
+          
       - name: Check formatting
         run: stylua --check lua/ init.lua tests/
-      - name: Install luacheck
-        run: luarocks install luacheck
+        
+      - name: Install Lua and luacheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1 luarocks
+          sudo luarocks install luacheck
+          
       - name: Lint
         run: luacheck lua/ init.lua
 
@@ -32,17 +39,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
           version: ${{ matrix.neovim }}
+          
       - name: Install plenary
         shell: bash
         run: |
           mkdir -p ~/.local/share/nvim/site/pack/test/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim \
             ~/.local/share/nvim/site/pack/test/start/plenary.nvim
+            
       - name: Run tests
         shell: bash
         run: |
