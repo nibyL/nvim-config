@@ -19,9 +19,15 @@
 if vim.fn.has('nvim-0.12') == 0 then
   local detected = tostring(vim.version())
   vim.api.nvim_echo({
-    { '════════════════════════════════════════════════════════\n', 'ErrorMsg' },
+    {
+      '════════════════════════════════════════════════════════\n',
+      'ErrorMsg',
+    },
     { ' Configuration Neovim : version incompatible\n', 'ErrorMsg' },
-    { '════════════════════════════════════════════════════════\n', 'ErrorMsg' },
+    {
+      '════════════════════════════════════════════════════════\n',
+      'ErrorMsg',
+    },
     { '\n' },
     { ' Requis  : Neovim 0.12 ou supérieur\n', 'WarningMsg' },
     { ' Détecté : ' .. detected .. '\n', 'WarningMsg' },
@@ -70,13 +76,15 @@ if not ok_notify then
   -- Fallback minimaliste : vim.notify brut, silencieux en headless.
   local function make_notifier(level)
     return function(msg)
-      if is_headless then return end
+      if is_headless then
+        return
+      end
       vim.notify(msg, level)
     end
   end
   notify = {
-    info  = make_notifier(vim.log.levels.INFO),
-    warn  = make_notifier(vim.log.levels.WARN),
+    info = make_notifier(vim.log.levels.INFO),
+    warn = make_notifier(vim.log.levels.WARN),
     error = make_notifier(vim.log.levels.ERROR),
     debug = function() end,
   }

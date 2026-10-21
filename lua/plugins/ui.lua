@@ -31,7 +31,12 @@ return function()
           cmd = 'pwsh',
           win = {
             keys = {
-              term_normal = { '<Esc>', '<C-\\><C-n>', mode = 't', desc = 'Quitter le mode terminal' },
+              term_normal = {
+                '<Esc>',
+                '<C-\\><C-n>',
+                mode = 't',
+                desc = 'Quitter le mode terminal',
+              },
             },
           },
         },

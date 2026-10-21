@@ -16,5 +16,5 @@ require('tools.compiler')
 
 -- NOTE: tools.leap est chargé uniquement si leap.nvim est installé
 if vim.fn.isdirectory(vim.fn.stdpath('data') .. '/site/pack/core/opt/leap.nvim') == 1 then
-    require('tools.leap')
+  require('tools.leap')
 end

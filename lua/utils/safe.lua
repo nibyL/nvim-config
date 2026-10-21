@@ -17,7 +17,9 @@ local M = {}
 local failures = {}
 
 local function record_failure(name, err, optional)
-  if failures[name] then return end -- idempotent
+  if failures[name] then
+    return
+  end -- idempotent
 
   failures[name] = {
     error = tostring(err),
@@ -30,7 +32,9 @@ end
 -- NOTIFICATION (avec repli si utils.notify indisponible)
 -- ----------------------------------------------------------------------------
 local function emit(msg, level, optional)
-  if #vim.api.nvim_list_uis() == 0 then return end
+  if #vim.api.nvim_list_uis() == 0 then
+    return
+  end
 
   local ok, notify = pcall(require, 'utils.notify')
   if ok and notify then

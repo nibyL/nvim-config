@@ -38,10 +38,7 @@ vim.keymap.set('n', '<leader>mp', function()
       end
 
       -- Ouverture via la commande spécifique à l'OS
-      vim.fn.jobstart(
-        vim.list_extend(env.get_explorer_cmd(), { output }),
-        { detach = true }
-      )
+      vim.fn.jobstart(vim.list_extend(env.get_explorer_cmd(), { output }), { detach = true })
 
       vim.notify(
         'Aperçu Pandoc généré : ' .. vim.fn.fnamemodify(output, ':t'),
