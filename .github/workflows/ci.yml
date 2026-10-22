@@ -64,6 +64,5 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Astuce : On crée un fichier de commande temporaire pour éviter les problèmes d'échappement
           "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}" | Out-File -FilePath test_cmd.vim -Encoding ascii
-          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim
+          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim +qa
