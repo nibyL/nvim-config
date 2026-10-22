@@ -130,21 +130,20 @@ local TOOL_MODULES = {
 -- ----------------------------------------------------------------------------
 
 for _, mod in ipairs(CORE_MODULES) do
-  safe.require(mod, { optional = false })
+  safe.require(mod, { mode = 'fatal' })
 end
 
 for _, mod in ipairs(PLUGIN_MODULES) do
-  local setup_fn = safe.require(mod, { optional = true })
+  local setup_fn = safe.require(mod, { mode = 'warn' })
   if type(setup_fn) == 'function' then
-    setup_fn()
+    safe.call(mod, setup_fn)
   end
 end
 
--- LSP dépend de blink.cmp → chargé après les plugins
-safe.require('lsp', { optional = false })
+safe.require('lsp', { mode = 'fatal' })
 
 for _, mod in ipairs(TOOL_MODULES) do
-  safe.require(mod, { optional = true })
+  safe.require(mod, { mode = 'optional' })
 end
 
 -- ============================================================================

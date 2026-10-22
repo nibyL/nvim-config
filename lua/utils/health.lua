@@ -99,21 +99,25 @@ local function check_failed_modules()
   end
 
   local failed = safe.get_failures()
-  local count = vim.tbl_count(failed)
-
-  if count == 0 then
+  if next(failed) == nil then
     vim.health.ok('Aucun échec de chargement enregistré')
-    return
+  else
+    local mode_to_health = {
+      fatal = vim.health.error,
+      warn = vim.health.error,
+      optional = vim.health.warn,
+    }
+    for name, info in pairs(failed) do
+      local level = mode_to_health[info.mode] or vim.health.error
+      level(('%-30s [mode=%s]\n  → %s'):format(name, info.mode, info.error))
+    end
   end
 
-  for name, info in pairs(failed) do
-    local label = string.format('%s (%s)', name, info.optional and 'optionnel' or 'REQUIS')
-    local msg = label .. '\n  → ' .. tostring(info.error)
-
-    if info.optional then
-      vim.health.warn(msg)
-    else
-      vim.health.error(msg)
+  local setup_failed = safe.get_setup_failures()
+  if next(setup_failed) ~= nil then
+    vim.health.start('Setup failures')
+    for name, info in pairs(setup_failed) do
+      vim.health.error(('%s\n  → %s'):format(name, info.error))
     end
   end
 end

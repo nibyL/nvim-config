@@ -1,108 +1,154 @@
 -- ============================================================================
 -- CHARGEMENT SÉCURISÉ DE MODULES
 -- ============================================================================
--- Enregistre chaque échec dans un registre module-level (pas vim.g, qui
--- ne préserve pas les tables imbriquées). utils.health consomme ce registre
--- via M.get_failures().
+-- Contrat strict :
+--   mode = 'fatal'    → échec : message + cq (Neovim refuse de démarrer)
+--   mode = 'warn'     → échec : notify ERROR + registre (démarrage dégradé)
+--   mode = 'optional' → échec : notify WARN  + registre (confort)
+--
+-- Défaut (sans opts) : 'warn'. Un module requis doit être fatal explicitement.
+-- Registre consommé par utils.health via get_failures() / get_setup_failures().
 -- ============================================================================
 
 local M = {}
 
--- ----------------------------------------------------------------------------
--- REGISTRE MODULE-LEVEL
--- ----------------------------------------------------------------------------
--- Conservé en closure Lua (pas exposé à Vimscript).
--- Format : { [module_name] = { error, optional, timestamp } }
--- ----------------------------------------------------------------------------
-local failures = {}
+local VALID_MODES = { fatal = true, warn = true, optional = true }
+local DEFAULT_MODE = 'warn'
 
-local function record_failure(name, err, optional)
-  if failures[name] then
-    return
-  end -- idempotent
+-- Registres module-level (closures, pas vim.g qui ne préserve pas les tables)
+local load_failures = {}
+local setup_failures = {}
 
-  failures[name] = {
-    error = tostring(err),
-    optional = optional,
-    timestamp = os.time(),
-  }
+local function record_load_failure(name, err, mode)
+    if load_failures[name] then
+        return -- idempotent
+    end
+    load_failures[name] = {
+        error = tostring(err),
+        mode = mode,
+        timestamp = os.time(),
+    }
 end
 
--- ----------------------------------------------------------------------------
--- NOTIFICATION (avec repli si utils.notify indisponible)
--- ----------------------------------------------------------------------------
-local function emit(msg, level, optional)
-  if #vim.api.nvim_list_uis() == 0 then
-    return
-  end
-
-  local ok, notify = pcall(require, 'utils.notify')
-  if ok and notify then
-    if optional then
-      notify.warn(msg, 'Chargement')
-    else
-      notify.error(msg, 'Chargement')
+local function emit(msg, level, title)
+    -- Silence total en headless (CI, scripts)
+    if #vim.api.nvim_list_uis() == 0 then
+        return
     end
-  else
-    vim.notify(msg, level, { title = 'Chargement' })
-  end
+
+    local ok, notify = pcall(require, 'utils.notify')
+    if ok and notify then
+        if level >= vim.log.levels.ERROR then
+            notify.error(msg, title)
+        else
+            notify.warn(msg, title)
+        end
+    else
+        vim.notify(msg, level, { title = title })
+    end
 end
 
 -- ----------------------------------------------------------------------------
 -- API PUBLIQUE
 -- ----------------------------------------------------------------------------
 
---- Charge un module avec gestion d'erreur et enregistrement.
+--- Charge un module avec contrat strict.
 --- @param module_name string
---- @param opts? { optional?: boolean }
+--- @param opts? { mode?: 'fatal'|'warn'|'optional' }
 --- @return table|nil
 function M.require(module_name, opts)
-  opts = opts or {}
-  local optional = opts.optional == true
+    opts = opts or {}
+    local mode = opts.mode or DEFAULT_MODE
 
-  local ok, result = pcall(require, module_name)
+    if not VALID_MODES[mode] then
+        error(
+            ('safe.require: mode invalide "%s" (attendu: fatal|warn|optional)'):format(tostring(mode)),
+            2
+        )
+    end
 
-  if not ok then
-    record_failure(module_name, result, optional)
+    local ok, result = pcall(require, module_name)
+    if ok then
+        return result
+    end
 
-    local label = optional and 'Module optionnel indisponible' or 'Module requis introuvable'
-    emit(
-      string.format('%s : %s\n%s', label, module_name, tostring(result)),
-      optional and vim.log.levels.WARN or vim.log.levels.ERROR,
-      optional
-    )
+    record_load_failure(module_name, result, mode)
+
+    if mode == 'fatal' then
+        local msg = ('ERREUR FATALE : module requis "%s"\n%s'):format(module_name, tostring(result))
+
+        -- 1. Écrire dans stderr (visible même quand l'UI Neovim se ferme instantanément)
+        io.stderr:write('\n════════════════════════════════════════════════════════\n')
+        io.stderr:write(' ' .. msg .. '\n')
+        io.stderr:write('════════════════════════════════════════════════════════\n')
+        io.stderr:write(' La configuration ne peut pas démarrer.\n\n')
+        io.stderr:flush()
+
+        -- 2. Écrire dans un fichier de log persistant
+        local log = vim.fn.stdpath('log') .. '/startup.log'
+        pcall(vim.fn.writefile, {
+            ('[%s] FATAL %s'):format(os.date('%Y-%m-%d %H:%M:%S'), module_name),
+            tostring(result),
+            '',
+        }, log, 'a')
+
+        -- 3. Message dans l'UI Neovim (pour les terminaux qui le capturent)
+        vim.api.nvim_echo({
+            { '════════════════════════════════════════════════════════\n', 'ErrorMsg' },
+            { (' ERREUR FATALE : module requis "%s"\n'):format(module_name), 'ErrorMsg' },
+            { '════════════════════════════════════════════════════════\n', 'ErrorMsg' },
+            { tostring(result) .. '\n', 'WarningMsg' },
+            { '\n' },
+            { ' Log : ' .. log .. '\n', 'Comment' },
+            { ' La configuration ne peut pas démarrer.\n', 'Comment' },
+        }, true, {})
+
+        -- 4. Pause de 2s pour laisser le temps de lire (sauf si headless)
+        if #vim.api.nvim_list_uis() > 0 then
+            vim.cmd('sleep 2')
+        end
+
+        vim.cmd('cq')
+        return nil
+    end
+
+    local label = mode == 'warn' and 'Module requis indisponible' or 'Module optionnel indisponible'
+    local level = mode == 'warn' and vim.log.levels.ERROR or vim.log.levels.WARN
+    emit(('%s : %s\n%s'):format(label, module_name, tostring(result)), level, 'Chargement')
     return nil
-  end
-
-  return result
 end
 
---- Exécute une fonction en sécurité (sans enregistrement de module).
+--- Exécute une fonction (typiquement un .setup()) en isolant l'erreur.
+--- Enregistre l'échec dans setup_failures pour :checkhealth monprofil.
+--- @param name string Identifiant lisible (ex: 'plugins.ui:snacks')
 --- @param fn function
---- @param context? string
---- @return boolean, any
-function M.call(fn, context)
-  local ok, err = pcall(fn)
-  if not ok then
-    emit(
-      string.format('Erreur dans %s :\n%s', context or 'inconnu', tostring(err)),
-      vim.log.levels.ERROR,
-      false
-    )
-    return false, err
-  end
-  return true, nil
+--- @return boolean ok
+function M.call(name, fn)
+    local ok, err = pcall(fn)
+    if not ok then
+        setup_failures[name] = {
+            error = tostring(err),
+            timestamp = os.time(),
+        }
+        emit(('Échec de %s :\n%s'):format(name, tostring(err)), vim.log.levels.ERROR, 'Setup')
+    end
+    return ok
 end
 
---- Accès en lecture au registre (pour utils.health).
---- @return table<string, {error: string, optional: boolean, timestamp: number}>
+--- @return table<string, {error:string, mode:string, timestamp:number}>
 function M.get_failures()
-  return failures
+    return load_failures
 end
 
---- Efface le registre (tests uniquement).
+--- @return table<string, {error:string, timestamp:number}>
+function M.get_setup_failures()
+    return setup_failures
+end
+
+--- Vide les registres (tests uniquement).
 function M._reset()
-  failures = {}
+    load_failures = {}
+    setup_failures = {}
 end
 
 return M
