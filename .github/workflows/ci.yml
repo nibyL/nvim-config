@@ -22,13 +22,19 @@ jobs:
         run: stylua --check lua/ init.lua tests/
         
       - name: Install Lua and luacheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lua5.1 luarocks
-          sudo luarocks install luacheck
+        uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.1"
+          
+      - name: Install luarocks and luacheck
+        uses: leafo/gh-actions-luarocks@v4
+        with:
+          luarocksVersion: "3.9.2"
           
       - name: Lint
-        run: luacheck lua/ init.lua
+        run: |
+          luarocks install luacheck
+          luacheck lua/ init.lua
 
   test:
     strategy:
@@ -55,6 +61,5 @@ jobs:
             
       - name: Run tests
         shell: bash
-        run: |
-          nvim --headless -u tests/minimal_init.lua \
-            -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+        # On met la commande sur une seule ligne pour éviter les problèmes de fin de ligne (CRLF) sous Windows
+        run: nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
