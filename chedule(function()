@@ -1,0 +1,43 @@
+* [33m985659e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m fix(safe): enforce strict contract via mode enum and persistent fatal errors
+[31m|[m * [33m52e1f50[m[33m ([m[1;33mtag: [m[1;33mv0.10.0[m[33m)[m fix(safe): enforce strict contract via mode enum and persistent fatal errors
+[31m|[m[31m/[m  
+* [33m6fcb77a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix(ci): resolve yaml syntax error and fix windows test runner
+* [33mbb839b7[m fix(ci): robust cross-platform test execution and apt-based luacheck
+* [33m159278c[m fix(ci): robust cross-platform test execution and apt-based luacheck
+* [33m86367ff[m fix(ci): use official lua actions and single-line commands for windows
+* [33m6cfc090[m fix(ci): install luacheck dependencies and use bash for cross-platform tests
+* [33mfe14824[m style: format code with stylua for CI compliance
+* [33m9ec466d[m fix(ci): simplify luacheck config to use native busted support
+* [33m98e2a3f[m fix(ci): add luacheck globals for tests
+* [33mc6e20f3[m[33m ([m[1;33mtag: [m[1;33mv0.9.0[m[33m)[m test(ci): phase 4 - comprehensive tests and multi-OS CI
+* [33m43d2721[m[33m ([m[1;33mtag: [m[1;33mv0.8.0[m[33m)[m feat(lazy): phase 1 - event-driven lazy loading with vim.pack
+* [33mb659d89[m fix(lsp,test): modernize deprecated APIs and silence spec noise
+* [33me0958ee[m[33m ([m[1;33mtag: [m[1;33mv0.7.0[m[33m)[m refactor(core): phase 0 - production-grade hardening
+* [33m7e58bb1[m fix(ci): make tests OS-agnostic and plugin-agnostic
+* [33mfbd29a8[m[33m ([m[1;33mtag: [m[1;33mv0.6.0[m[33m)[m docs: add README, architecture, keymaps, LICENSE and CI
+* [33mc2acdde[m[33m ([m[1;33mtag: [m[1;33mv0.5.0[m[33m)[m test: add plenary test suite for keymaps, autocmds, and utils
+* [33mf21c8a8[m fix: correct Makefile echo, rename luacheckrc, add .gitattributes
+* [33mbedbb74[m[33m ([m[1;33mtag: [m[1;33mv0.4.0[m[33m)[m chore: add code quality tooling (stylua, luacheck, make)
+* [33m042f5ce[m[33m ([m[1;33mtag: [m[1;33mv0.3.0[m[33m)[m feat: add custom health check via :CheckConfig and :checkhealth monprofil
+* [33m1d9aa7e[m[33m ([m[1;33mtag: [m[1;33mv0.2.0[m[33m)[m Phase 1 — Utils foundation: - Add utils/safe for safe module loading with error handling - Add utils/notify for uniform notifications with prefix - Refactor init.lua into declarative module lists (core/plugins/tools)
+* [33mc57726d[m feat: add Markdown preview plugin
+* [33m54570ae[m fix: detect filetype for new Snacks Explorer files
+* [33mde3cebb[m feat: add persistent directory history and universal Ctrl+A
+* [33mbbda624[m feat: add persistent directory history and universal Ctrl+A
+* [33m92ca638[m fix(snacks): fix terminal restart and picker scope
+* [33m8d71b32[m refactor: disable custom file and folder masking
+* [33m9c2cb46[m feat: add python
+* [33m7dfada5[m feat : add full-disk folder search
+* [33m116063f[m feat(core,plugins): redirect TMP to C:\Temp\NvimTemp and add fast directory history
+* [33m86c5d12[m feat: Added full-disk search
+* [33mbefa6d9[m feat: add hybrid picker, async compiler (C/C++/ASM via WSL), and buffer navigation
+* [33mb0e047f[m feat: add fuzzy finder, buffers navigation and PowerShell shell
+* [33mb269833[m feat: add persistent theme toggle and dynamic Clang detection
+* [33me70c0e2[m refactor: complete modularization and performance optimizations
+* [33mbc629ca[m feat: complete configuration overhaul
+* [33maac4dcd[m chore: suppression de json.dll du dépôt
+* [33mb2b6424[m chore: suppression de nvim-pack-lock.json du dépôt
+* [33m4ef68ab[m chore: configuration initiale de Neovim
+* [33me4b27c6[m chore: suppression de nvim-pack-lock.json du dépôt
+* [33m875561d[m chore: suppression de json.dll du dépôt
+* [33m74e9e52[m[33m ([m[1;33mtag: [m[1;33mv0.1.0[m[33m)[m chore: configuration initiale de Neovim
