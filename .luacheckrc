@@ -1,8 +1,7 @@
 std = "lua51+luajit"
 max_line_length = 120
 
--- On autorise juste le global `vim` de Neovim
-globals = { "vim" }
+-- Globales Neovim et Busted
+globals = { "vim", "describe", "it", "assert", "before_each", "after_each", "pending" }
 
--- On ignore l'avertissement 212 (argument non utilisé)
 ignore = { "212" }

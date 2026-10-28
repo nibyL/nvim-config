@@ -65,4 +65,4 @@ jobs:
         shell: pwsh
         run: |
           "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}" | Out-File -FilePath test_cmd.vim -Encoding ascii
-          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim +qa
+          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim
