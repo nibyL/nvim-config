@@ -31,21 +31,24 @@ local function record_load_failure(name, err, mode)
 end
 
 local function emit(msg, level, title)
-    -- Silence total en headless (CI, scripts)
-    if #vim.api.nvim_list_uis() == 0 then
-        return
-    end
+  -- Silence total en headless (CI, scripts)
+  if #vim.api.nvim_list_uis() == 0 then
+    return
+  end
 
+  -- On force l'affichage après le rafraîchissement de l'écran
+  vim.schedule(function()
     local ok, notify = pcall(require, 'utils.notify')
     if ok and notify then
-        if level >= vim.log.levels.ERROR then
-            notify.error(msg, title)
-        else
-            notify.warn(msg, title)
-        end
+      if level >= vim.log.levels.ERROR then
+        notify.error(msg, title)
+      else
+        notify.warn(msg, title)
+      end
     else
-        vim.notify(msg, level, { title = title })
+      vim.notify(msg, level, { title = title })
     end
+  end)
 end
 
 -- ----------------------------------------------------------------------------
