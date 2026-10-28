@@ -48,15 +48,6 @@ end
 vim.loader.enable()
 
 -- ----------------------------------------------------------------------------
--- DÉTECTION DU MODE HEADLESS
--- ----------------------------------------------------------------------------
--- En mode headless (CI, scripts), on force le silence total :
--- vim.notify est redirigé vers une fonction no-op pour ne pas polluer
--- stdout/stderr. Seules les erreurs critiques utilisent nvim_echo + cq.
--- ----------------------------------------------------------------------------
-local is_headless = #vim.api.nvim_list_uis() == 0
-
--- ----------------------------------------------------------------------------
 -- MODULES UTILITAIRES (requis avant tout le reste)
 -- ----------------------------------------------------------------------------
 -- Ces deux modules sont volontairement chargés hors de safe.require :
@@ -69,25 +60,6 @@ if not ok_safe then
     { tostring(safe) .. '\n', 'WarningMsg' },
   }, true, {})
   vim.cmd('cq')
-end
-
-local ok_notify, notify = pcall(require, 'utils.notify')
-if not ok_notify then
-  -- Fallback minimaliste : vim.notify brut, silencieux en headless.
-  local function make_notifier(level)
-    return function(msg)
-      if is_headless then
-        return
-      end
-      vim.notify(msg, level)
-    end
-  end
-  notify = {
-    info = make_notifier(vim.log.levels.INFO),
-    warn = make_notifier(vim.log.levels.WARN),
-    error = make_notifier(vim.log.levels.ERROR),
-    debug = function() end,
-  }
 end
 
 -- ----------------------------------------------------------------------------
