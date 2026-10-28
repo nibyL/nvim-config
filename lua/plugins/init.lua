@@ -28,7 +28,7 @@ pack_add_safe({
   'https://github.com/folke/snacks.nvim',
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/D0nw0r/dark2026.nvim',
-  'https://github.com/Mofiqul/dracula.nvimmmmmmmmmmmm',
+  'https://github.com/Mofiqul/dracula.nvim',
   'https://github.com/folke/tokyonight.nvim',
   'https://github.com/Mofiqul/vscode.nvim',
 }, 'core_ui')
