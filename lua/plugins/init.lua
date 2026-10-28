@@ -3,21 +3,35 @@
 -- ============================================================================
 
 local lazyload = require('core.lazyload')
+local safe = require('utils.safe')
 
 -- Plugin natif de Neovim
 vim.cmd('packadd! nohlsearch')
 
 -- ============================================================================
+-- FONCTION DE SÉCURISATION DE L'INSTALLATION
+-- ============================================================================
+local function pack_add_safe(plugins, label)
+  local ok, err = pcall(vim.pack.add, plugins, { confirm = false })
+  if not ok then
+    safe.call('plugins.init:' .. label, function()
+      error('Échec de l\'installation du groupe "' .. label .. '" : ' .. tostring(err))
+    end)
+  end
+  return ok
+end
+
+-- ============================================================================
 -- 1. CHARGEMENT IMMÉDIAT (Nécessaires pour l'UI de base)
 -- ============================================================================
-vim.pack.add({
+pack_add_safe({
   'https://github.com/folke/snacks.nvim',
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/D0nw0r/dark2026.nvim',
-  'https://github.com/Mofiqul/dracula.nvim',
+  'https://github.com/Mofiqul/dracula.nvimmmmmmmmmmmm',
   'https://github.com/folke/tokyonight.nvim',
   'https://github.com/Mofiqul/vscode.nvim',
-}, { confirm = false })
+}, 'core_ui')
 
 -- ============================================================================
 -- 2. CHARGEMENT PAR ÉVÉNEMENT
@@ -28,11 +42,6 @@ lazyload.on('BufReadPost', {
   'https://github.com/saghen/blink.lib',
   'https://github.com/saghen/blink.cmp',
 })
-
--- vim.pack.add({
---   'https://github.com/saghen/blink.lib',
---   'https://github.com/saghen/blink.cmp',
--- }, { confirm = false })
 
 -- Git : uniquement quand on ouvre un fichier (ou revient sur un buffer)
 lazyload.on('BufReadPost', {
