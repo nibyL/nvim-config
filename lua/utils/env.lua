@@ -277,12 +277,27 @@ end
 -- ----------------------------------------------------------------------------
 function M.setup_shell()
   if M.is_windows then
-    vim.o.shell = 'cmd.exe'
-    vim.o.shellcmdflag = '/c'
-    vim.o.shellredir = '2>&1 > %s'
-    vim.o.shellpipe = '2>&1 > %s'
-    vim.o.shellquote = ''
-    vim.o.shellxquote = ''
+    -- Détection de PowerShell 7 (pwsh)
+    local pwsh = M.find_executable('pwsh', {
+      'C:/Program Files/PowerShell/7/pwsh.exe',
+      vim.fn.expand('$LOCALAPPDATA') .. '\\Microsoft\\WindowsApps\\pwsh.exe',
+    })
+
+    if pwsh then
+      vim.o.shell = pwsh
+      vim.o.shellcmdflag = '-NoLogo -NoProfile -Command'
+      vim.o.shellquote = ''
+      vim.o.shellxquote = ''
+      vim.o.shellredir = '2>&1 | Out-File -Encoding UTF8 %s'
+    else
+      -- Fallback sur cmd.exe si pwsh n'est pas disponible
+      vim.o.shell = 'cmd.exe'
+      vim.o.shellcmdflag = '/c'
+      vim.o.shellredir = '2>&1 > %s'
+      vim.o.shellpipe = '2>&1 > %s'
+      vim.o.shellquote = ''
+      vim.o.shellxquote = ''
+    end
   else
     vim.o.shell = vim.env.SHELL or 'bash'
   end

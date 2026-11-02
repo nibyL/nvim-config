@@ -3,7 +3,7 @@
 -- ============================================================================
 -- Politique de production :
 --   - Silencieux en headless (CI, scripts)
---   - Déduplication par (niveau, message) pour éviter le spam
+--   - Déduplication temporelle (5s) pour éviter le spam
 --   - Préfixe discret ⚙ pour identifier les messages de la config
 -- ============================================================================
 
@@ -11,19 +11,26 @@ local M = {}
 
 local PREFIX = '⚙ '
 
--- Déduplication : une même notification n'apparaît qu'une fois par session.
--- Clé = "niveau:message". Les erreurs ne sont pas dédupliquées (toujours visibles).
+-- Déduplication : fenêtre temporelle de 5 secondes
 local seen = {}
+local DEDUP_WINDOW_MS = 5000
 
 local function should_dedupe(level, msg)
+  -- Les erreurs ne sont jamais dédupliquées
   if level >= vim.log.levels.ERROR then
     return false
   end
+
   local key = tostring(level) .. ':' .. msg
-  if seen[key] then
+  local now = vim.uv.now()
+  local entry = seen[key]
+
+  if entry and (now - entry.last_ts) < DEDUP_WINDOW_MS then
+    entry.count = entry.count + 1
     return false
   end
-  seen[key] = true
+
+  seen[key] = { count = 1, last_ts = now }
   return true
 end
 
@@ -33,7 +40,6 @@ local function emit(msg, level, title)
     return
   end
 
-  -- Déduplication (sauf erreurs)
   if not should_dedupe(level, msg) then
     return
   end
