@@ -94,7 +94,9 @@ paths with spaces. `C:\Temp\NvimTemp` avoids this issue.
 The test suite (`tests/`) uses **plenary.nvim**:
 - `minimal_init.lua` — Minimal init for tests (no plugins)
 - `keymaps_spec.lua` — 13 keymap tests
-- `autocmds_spec.lua` — 15 autocmd/options/utils tests
+- `autocmds_spec.lua` — 3 autocmd tests, 7 option tests, 5 utils tests
+- `env_spec.lua` — 4 environment detection tests
+- `safe_spec.lua` — 8 module loading tests
 
 Run with `make test`.
 

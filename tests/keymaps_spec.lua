@@ -62,18 +62,6 @@ describe('Keymaps', function()
   end)
 
   it('<leader>/ is mapped for comments', function()
-    -- Le keymap pointe vers gcc/gc (natif Neovim 0.10+), fourni par le plugin
-    -- `comment`. En environnement minimal, ce plugin peut ne pas être chargé.
-    -- On vérifie donc uniquement si le plugin est disponible.
-    local has_comment = vim.fn.exists(':CommentToggle') == 1
-      or package.loaded['vim._core._comment'] ~= nil
-      or vim.api.nvim_get_runtime_file('plugin/comment.lua', false)[1] ~= nil
-
-    if not has_comment then
-      pending('Plugin `comment` non chargé en environnement minimal — test ignoré')
-      return
-    end
-
     local map_n = vim.fn.maparg('<leader>/', 'n')
     local map_v = vim.fn.maparg('<leader>/', 'v')
     assert.is_not_equal('', map_n, 'Missing keymap: <leader>/ (normal)')

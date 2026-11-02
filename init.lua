@@ -47,6 +47,7 @@ end
 -- sur le temps de require au démarrage. Idempotent, sans effet de bord.
 -- ----------------------------------------------------------------------------
 vim.loader.enable()
+vim.g.debug_mode = vim.env.NVIM_DEBUG == '1'
 
 -- ----------------------------------------------------------------------------
 -- MODULES UTILITAIRES (requis avant tout le reste)
