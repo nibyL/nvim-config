@@ -64,5 +64,17 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}" | Out-File -FilePath test_cmd.vim -Encoding ascii
-          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim
+          $test_files = @(
+            "tests/autocmds_spec.lua",
+            "tests/env_spec.lua",
+            "tests/keymaps_spec.lua",
+            "tests/safe_spec.lua"
+          )
+          foreach ($file in $test_files) {
+            Write-Host "Running $file..."
+            nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedFile $file" -c "qa!"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Test failed: $file"
+              exit 1
+            }
+          }
