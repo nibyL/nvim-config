@@ -34,8 +34,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         neovim: [nightly, v0.11.4]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,8 +53,16 @@ jobs:
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim \
             ~/.local/share/nvim/site/pack/test/start/plenary.nvim
 
-      - name: Run tests
+      - name: Run tests (Unix)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           nvim --headless -u tests/minimal_init.lua \
             -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}" | Out-File -FilePath test_cmd.vim -Encoding ascii
+          nvim --headless -u tests/minimal_init.lua -S test_cmd.vim
