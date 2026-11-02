@@ -16,6 +16,7 @@
 --   vim.diagnostic.count, vim.filetype.match({buf=}), vim.loader
 -- Sur une version antérieure, on refuse de démarrer proprement.
 -- ----------------------------------------------------------------------------
+local _start_time = vim.uv.hrtime()
 if vim.fn.has('nvim-0.12') == 0 then
   local detected = tostring(vim.version())
   vim.api.nvim_echo({
@@ -118,6 +119,7 @@ for _, mod in ipairs(TOOL_MODULES) do
   safe.require(mod, { mode = 'optional' })
 end
 
+vim.g._config_load_ms = (vim.uv.hrtime() - _start_time) / 1e6
 -- ============================================================================
 -- USER COMMANDS
 -- ============================================================================

@@ -104,22 +104,10 @@ local function init_lsp()
     end,
   })
 
-  -- Activation des serveurs
-  local servers = {
-    'clangd',
-    'lua_ls',
-    'rust_analyzer',
-    'pyright',
-    'asm_lsp',
-    'ts_ls',
-    'html',
-    'emmet_ls',
-    'jinja_lsp',
-    'nushell',
-    'svelte',
-  }
-
-  for _, name in ipairs(servers) do
+  -- Activation des serveurs depuis le registre centralisé
+  local registry = require('lsp.registry')
+  for _, srv in ipairs(registry) do
+    local name = srv.name
     local ok, override = pcall(require, 'lsp.' .. name)
     if ok and type(override) == 'table' then
       vim.lsp.config(name, override)
