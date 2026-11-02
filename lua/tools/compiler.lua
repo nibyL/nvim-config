@@ -1,5 +1,5 @@
 -- ============================================================================
--- COMPILATION / EXÉCUTION (C, C++, ASM via WSL | Python via Windows)
+-- COMPILATION / EXÉCUTION (Natif Windows, WSL, ou Python)
 -- ============================================================================
 local env = require('utils.env')
 local is_windows = env.is_windows
@@ -8,7 +8,6 @@ local is_windows = env.is_windows
 -- FONCTIONS AUXILIAIRES
 -- ==========================================================================
 
--- Conversion d'un chemin Windows (C:\foo\bar) vers WSL (/mnt/c/foo/bar)
 local function to_wsl(win_path)
   if not is_windows then
     return win_path
@@ -20,53 +19,50 @@ local function to_wsl(win_path)
   return path
 end
 
--- Échappement pour un chemin (gère espaces et apostrophes)
 local function sh_escape(s, force_win)
   if is_windows and force_win then
-    -- Échappement sécurisé pour les chaînes de caractères Windows entre guillemets
     return '"' .. tostring(s):gsub('"', '\\"') .. '"'
   else
-    -- Échappement POSIX classique pour Linux/WSL
     return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
   end
 end
 
--- Terminal persistant
-local term_buf = nil
+-- ==========================================================================
+-- DÉTECTION DES COMPILATEURS
+-- ==========================================================================
 
-local function open_terminal()
-  if term_buf and vim.api.nvim_buf_is_valid(term_buf) then
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      if vim.api.nvim_win_get_buf(win) == term_buf then
-        vim.api.nvim_set_current_win(win)
-        return term_buf
-      end
+local function get_c_compiler()
+  if is_windows then
+    -- Priorité au natif s'il existe
+    if vim.fn.executable('gcc') == 1 then
+      return 'gcc', false
     end
-    vim.cmd('botright 15split')
-    vim.api.nvim_win_set_buf(0, term_buf)
-    return term_buf
+    -- Sinon WSL
+    if vim.fn.executable('wsl') == 1 then
+      return 'gcc', true
+    end
+  else
+    if vim.fn.executable('gcc') == 1 then
+      return 'gcc', false
+    end
   end
-  vim.cmd('botright 15split | enew')
-  term_buf = vim.api.nvim_get_current_buf()
-  return term_buf
+  return nil, false
 end
 
--- Lance la commande dans le bon interpréteur (WSL Bash ou Windows Power Shell)
-local function run_in_terminal(shell_cmd, use_windows_native)
-  local buf = open_terminal()
-  local job = vim.b[buf].terminal_job_id
-
-  if not job then
-    local shell
-    if use_windows_native then
-      shell = { vim.o.shell }
-    else
-      shell = env.get_wsl_cmd()
+local function get_cpp_compiler()
+  if is_windows then
+    if vim.fn.executable('g++') == 1 then
+      return 'g++', false
     end
-    vim.fn.jobstart(shell, { term = true, bufnr = buf })
+    if vim.fn.executable('wsl') == 1 then
+      return 'g++', true
+    end
+  else
+    if vim.fn.executable('g++') == 1 then
+      return 'g++', false
+    end
   end
-
-  vim.api.nvim_chan_send(vim.b[buf].terminal_job_id, shell_cmd .. '\r')
+  return nil, false
 end
 
 -- ==========================================================================
@@ -74,36 +70,80 @@ end
 -- ==========================================================================
 local function build_compile_command(target_file, target_exe, target_obj, ext)
   if ext == 'c' then
+    local bin, use_wsl = get_c_compiler()
+    if not bin then
+      return nil, nil, false
+    end
     return string.format(
-      'gcc %s -o %s -Wall -Wextra',
-      sh_escape(target_file),
-      sh_escape(target_exe)
+      '%s %s -o %s -Wall -Wextra',
+      bin,
+      sh_escape(target_file, not use_wsl),
+      sh_escape(target_exe, not use_wsl)
     ),
       'GCC',
-      false
+      not use_wsl
   elseif ext == 'cpp' or ext == 'cc' or ext == 'cxx' then
+    local bin, use_wsl = get_cpp_compiler()
+    if not bin then
+      return nil, nil, false
+    end
     return string.format(
-      'g++ %s -o %s -Wall -Wextra',
-      sh_escape(target_file),
-      sh_escape(target_exe)
+      '%s %s -o %s -Wall -Wextra',
+      bin,
+      sh_escape(target_file, not use_wsl),
+      sh_escape(target_exe, not use_wsl)
     ),
       'G++',
-      false
+      not use_wsl
   elseif ext == 'asm' or ext == 's' or ext == 'nasm' then
-    return string.format(
-      'nasm -f elf64 %s -o %s && ld %s -o %s',
-      sh_escape(target_file),
-      sh_escape(target_obj),
-      sh_escape(target_obj),
-      sh_escape(target_exe)
-    ),
-      'NASM',
-      false
-    --bloc d'exécution natif Windows pour Python
+    -- ASM est très rarement natif, on force WSL si dispo
+    if is_windows and vim.fn.executable('wsl') == 1 then
+      return string.format(
+        'nasm -f elf64 %s -o %s && ld %s -o %s',
+        sh_escape(target_file),
+        sh_escape(target_obj),
+        sh_escape(target_obj),
+        sh_escape(target_exe)
+      ),
+        'NASM (WSL)',
+        false
+    end
+    -- Fallback natif (si nasm est installé sous Windows)
+    if vim.fn.executable('nasm') == 1 then
+      return string.format(
+        'nasm -f win64 %s -o %s',
+        sh_escape(target_file, true),
+        sh_escape(target_obj, true)
+      ),
+        'NASM (Windows)',
+        true
+    end
+    return nil, nil, false
   elseif ext == 'py' then
-    return string.format('python %s', sh_escape(target_file, true)), 'Python (Windows)', true
+    if vim.fn.executable('python') == 1 or vim.fn.executable('python3') == 1 then
+      return string.format('python %s', sh_escape(target_file, true)), 'Python', true
+    end
+    return nil, nil, false
   end
   return nil, nil, false
+end
+
+-- ==========================================================================
+-- GESTION DU TERMINAL
+-- ==========================================================================
+local function execute_in_terminal(cmd)
+  local snacks = require('snacks')
+  local term_opts = { win = { position = 'bottom', height = 0.4 } }
+  local term_win = snacks.terminal.open('pwsh', term_opts)
+
+  if term_win and term_win.buf and vim.api.nvim_buf_is_valid(term_win.buf) then
+    local job_id = vim.b[term_win.buf].terminal_job_id
+    if job_id then
+      vim.api.nvim_chan_send(job_id, cmd .. '\r')
+      return true
+    end
+  end
+  return false
 end
 
 -- ==========================================================================
@@ -118,47 +158,79 @@ local function compile_and_run(run_after)
 
   local ext = vim.fn.expand('%:e'):lower()
 
-  -- Préparation des chemins selon la cible
-  local target_file = (ext == 'py') and file or to_wsl(file)
-  local target_exe = to_wsl(vim.fn.expand('%:p:r'))
-  local target_obj = to_wsl(vim.fn.expand('%:p:r') .. '.o')
+  -- On détermine si on doit utiliser WSL ou non en amont
+  local is_python = (ext == 'py')
+  local use_wsl = false
 
-  local compile_cmd, title, use_windows_native =
+  if ext == 'c' then
+    local _, w = get_c_compiler()
+    use_wsl = w
+  elseif ext == 'cpp' or ext == 'cc' or ext == 'cxx' then
+    local _, w = get_cpp_compiler()
+    use_wsl = w
+  elseif ext == 'asm' or ext == 's' or ext == 'nasm' then
+    use_wsl = is_windows and vim.fn.executable('wsl') == 1 and vim.fn.executable('nasm') == 0
+  end
+
+  local target_file = (is_python or not use_wsl) and file or to_wsl(file)
+  local target_exe = (is_python or not use_wsl) and vim.fn.expand('%:p:r')
+    or to_wsl(vim.fn.expand('%:p:r'))
+  local target_obj = (is_python or not use_wsl) and (vim.fn.expand('%:p:r') .. '.o')
+    or to_wsl(vim.fn.expand('%:p:r') .. '.o')
+
+  local compile_cmd, title, is_native =
     build_compile_command(target_file, target_exe, target_obj, ext)
 
   if not compile_cmd then
-    vim.notify('Type non supporté: .' .. ext, vim.log.levels.WARN)
+    vim.notify(
+      'Compilateur introuvable pour .' .. ext .. '. Installez GCC/G++ (natif ou WSL).',
+      vim.log.levels.ERROR
+    )
     return
   end
 
   vim.cmd('wall')
-
-  -- Notification
   vim.notify(
     (run_after and 'Exécution' or 'Compilation') .. ' de ' .. vim.fn.expand('%:t') .. '...',
     vim.log.levels.INFO,
     { title = title }
   )
 
-  -- Construction de la chaîne finale de commande
   local final_cmd
-  if use_windows_native then
-    -- Syntaxe d'enchaînement propre à PowerShell pour Python
-    final_cmd = compile_cmd .. "; Write-Host '`n--- [Terminé] ---'"
-  else
-    -- Syntaxe POSIX pour Bash (C/C++/ASM dans WSL)
+  if is_native then
+    -- Mode natif Windows (C/C++ compilé nativement)
     if run_after then
+      -- Utilisation de cmd /c pour forcer l'exécution dans le terminal parent
       final_cmd = compile_cmd
-        .. ' && '
-        .. sh_escape(target_exe)
-        .. " && echo -e '\\n--- [Terminé] ---' || echo -e '\\n--- [Échec] ---'"
+        .. ' ; if ($LASTEXITCODE -eq 0) { cmd.exe /c "'
+        .. target_exe
+        .. '" } ; Write-Host "`n--- [Terminé] ---"'
     else
-      final_cmd = compile_cmd
-        .. " && echo -e '\\n--- [Compilation OK] ---' || echo -e '\\n--- [Échec compilation] ---'"
+      final_cmd = compile_cmd .. ' ; Write-Host "`n--- [Compilation terminée] ---"'
+    end
+  else
+    -- Mode WSL ou Python natif direct
+    if is_python then
+      final_cmd = compile_cmd .. "; Write-Host '`n--- [Terminé] ---'"
+    else
+      local wsl_body
+      if run_after then
+        wsl_body = compile_cmd
+          .. ' && '
+          .. sh_escape(target_exe)
+          .. " && echo -e '\\n--- [Terminé] ---' || echo -e '\\n--- [Échec] ---'"
+      else
+        wsl_body = compile_cmd
+          .. " && echo -e '\\n--- [Compilation OK] ---' || echo -e '\\n--- [Échec compilation] ---'"
+      end
+      local escaped_body = wsl_body:gsub('"', '\\"')
+      final_cmd = 'wsl.exe bash -c "' .. escaped_body .. '"'
     end
   end
 
-  run_in_terminal(final_cmd, use_windows_native)
+  if not execute_in_terminal(final_cmd) then
+    vim.notify('Impossible de trouver ou créer un terminal', vim.log.levels.ERROR)
+  end
 end
 
 -- ==========================================================================
