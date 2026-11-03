@@ -142,8 +142,7 @@ else
     end,
   })
 
-  -- Fallback de sécurité : si blink ne se charge pas (ex: on ouvre un fichier
-  -- sans taper de texte), on l'initialise après 500ms.
+  -- Fallback de sécurité : si blink ne se charge pas, on l'initialise après 2000ms.
   vim.defer_fn(function()
     if done then
       return
@@ -152,13 +151,13 @@ else
     pcall(vim.api.nvim_del_autocmd, ev_id)
     try_init('timeout-no-blink')
 
-    -- On notifie l'utilisateur que le LSP est dégradé (sauf en headless)
+    -- Message informatif (pas une erreur)
     if #vim.api.nvim_list_uis() > 0 then
       vim.notify(
-        'LSP initialisé sans les capacités de blink.cmp (timeout 500ms).',
-        vim.log.levels.WARN,
+        'LSP initialisé avec les capacités par défaut (blink.cmp chargé après 2s).',
+        vim.log.levels.INFO,
         { title = 'LSP' }
       )
     end
-  end, 500)
+  end, 2000)
 end
