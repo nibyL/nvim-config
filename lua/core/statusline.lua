@@ -195,7 +195,7 @@ end
 -- STATUSLINE
 -- ============================================================================
 
-_G.native_statusline = function()
+local function render_statusline()
   return table.concat({
     status_mode(),
     status_filename(),
@@ -219,4 +219,6 @@ _G.native_statusline = function()
   })
 end
 
-vim.opt.statusline = '%{%v:lua.native_statusline()%}'
+-- On expose la fonction via vim.g pour que `%{%v:lua...%}` puisse l'appeler
+vim.g.Statusline = render_statusline
+vim.opt.statusline = '%{%v:lua.vim.g.Statusline()%}'

@@ -23,10 +23,21 @@ vim.api.nvim_create_autocmd('FileType', {
 -- FOLDING
 -- ============================================================================
 
--- Folding basé sur Treesitter
-vim.opt.foldmethod = 'expr'
-vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.opt.foldenable = false
+
+vim.api.nvim_create_autocmd('FileType', {
+  desc = 'Activer le folding Treesitter uniquement si un parser est dispo',
+  callback = function(args)
+    -- pcall(vim.treesitter.get_parser, buf) renvoie true si un parser existe
+    local ok, _ = pcall(vim.treesitter.get_parser, args.buf)
+    if ok then
+      vim.opt_local.foldmethod = 'expr'
+      vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    else
+      vim.opt_local.foldmethod = 'manual'
+    end
+  end,
+})
 
 -- ============================================================================
 -- INDENTATION
