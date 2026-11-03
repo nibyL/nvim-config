@@ -6,10 +6,16 @@ return function()
   vim.schedule(function()
     local safe = require('utils.safe')
 
-    -- Autopairs
-    safe.call('plugins.ui:autopairs', function()
-      require('nvim-autopairs').setup({})
-    end)
+    -- Autopairs (chargé à la demande par le lazy loader)
+    vim.api.nvim_create_autocmd('InsertEnter', {
+      once = true,
+      callback = function()
+        safe.call('plugins.ui:autopairs', function()
+          require('nvim-autopairs').setup({})
+        end)
+      end,
+      desc = 'Setup nvim-autopairs après son chargement',
+    })
 
     -- Quicker
     safe.call('plugins.ui:quicker', function()
