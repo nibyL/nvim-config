@@ -131,23 +131,50 @@ local function status_mode()
 end
 
 -- ============================================================================
--- DIAGNOSTICS (Optimisé : 0 allocation de tableau, appel C natif)
+-- DIAGNOSTICS (Cachés pour éviter le recalcul à chaque redraw)
 -- ============================================================================
 
+-- Cache par buffer
+local diag_cache = {}
+
+vim.api.nvim_create_autocmd('DiagnosticChanged', {
+  callback = function(args)
+    local buf = args.buf
+    local counts = vim.diagnostic.count(buf)
+    diag_cache[buf] = {
+      errors = counts[vim.diagnostic.severity.ERROR] or 0,
+      warnings = counts[vim.diagnostic.severity.WARN] or 0,
+    }
+  end,
+})
+
+vim.api.nvim_create_autocmd({ 'BufDelete', 'BufWipeout' }, {
+  callback = function(args)
+    diag_cache[args.buf] = nil
+  end,
+})
+
 local function status_diagnostics()
-  -- Récupération directe et instantanée des comptes
-  local counts = vim.diagnostic.count(0)
-  local errors = counts[vim.diagnostic.severity.ERROR] or 0
-  local warnings = counts[vim.diagnostic.severity.WARN] or 0
+  local buf = vim.api.nvim_get_current_buf()
+  local cached = diag_cache[buf]
+
+  if not cached then
+    -- Fallback : si le cache n'est pas encore initialisé, on calcule à la volée
+    local counts = vim.diagnostic.count(buf)
+    cached = {
+      errors = counts[vim.diagnostic.severity.ERROR] or 0,
+      warnings = counts[vim.diagnostic.severity.WARN] or 0,
+    }
+  end
 
   local result = ''
 
-  if errors > 0 then
-    result = result .. '%#StatusDiagnosticError# E:' .. errors .. '%*'
+  if cached.errors > 0 then
+    result = result .. '%#StatusDiagnosticError# E:' .. cached.errors .. '%*'
   end
 
-  if warnings > 0 then
-    result = result .. '%#StatusDiagnosticWarn# W:' .. warnings .. '%*'
+  if cached.warnings > 0 then
+    result = result .. '%#StatusDiagnosticWarn# W:' .. cached.warnings .. '%*'
   end
 
   return result

@@ -13,9 +13,17 @@ return function()
       return
     end
 
-    -- Construction du moteur fuzzy
+    -- Construction du moteur fuzzy (asynchrone)
     if not blink.library_available() then
-      blink.build():pwait()
+      vim.notify(
+        'Blink.cmp : compilation du moteur Rust en arrière-plan...',
+        vim.log.levels.INFO,
+        { title = 'Blink' }
+      )
+      -- On lance le build sans bloquer Neovim
+      -- (blink.build() retourne un objet avec :wait() bloquant,
+      -- mais sans :wait() il lance le job en tâche de fond)
+      blink.build({ notify = false })
     end
 
     blink.setup({

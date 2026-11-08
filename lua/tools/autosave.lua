@@ -87,8 +87,20 @@ vim.api.nvim_create_autocmd('FocusLost', {
 })
 
 -- ============================================================================
--- NETTOYAGE DES TIMERS
+-- NETTOYAGE DES TIMERS À LA FERMETURE D'UN BUFFER
 -- ============================================================================
+
+vim.api.nvim_create_autocmd({ 'BufDelete', 'BufWipeout' }, {
+  group = autosave_group,
+  desc = 'Nettoyage des timers à la fermeture du buffer',
+  callback = function(args)
+    local buf = args.buf
+    if save_timers[buf] then
+      save_timers[buf]:stop()
+      save_timers[buf] = nil
+    end
+  end,
+})
 
 vim.api.nvim_create_autocmd('VimLeavePre', {
   group = autosave_group,
