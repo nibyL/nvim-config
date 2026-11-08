@@ -1,4 +1,3 @@
-
 # Keymaps Reference
 
 Leader key: **`<Space>`**
@@ -57,6 +56,18 @@ Leader key: **`<Space>`**
 
 | Keymap | Mode | Action |
 |---|---|---|
+| `gd` | n | Go to definition |
+| `gD` | n | Go to declaration |
+| `gr` | n | Find references |
+| `gi` | n | Go to implementation |
+| `gt` | n | Go to type definition |
+| `K` | n | Hover documentation |
+| `<C-k>` | i | Signature help |
+| `<leader>rn` | n | Rename symbol |
+| `<leader>ca` | n, v | Code action |
+| `<leader>cd` | n | Show diagnostic in float |
+| `[d` | n | Previous diagnostic |
+| `]d` | n | Next diagnostic |
 | `<leader>fm` | n | Format buffer (LSP) |
 
 ---
@@ -68,7 +79,7 @@ Leader key: **`<Space>`**
 | `<F5>` | n | Compile & Run current file |
 | `<F6>` | n | Compile only |
 
-Supported: `.c`, `.cpp`, `.asm`, `.py`
+Supported: `.c`, `.cpp`, `.asm`, `.py` (with automatic native/WSL detection).
 
 ---
 
@@ -104,4 +115,3 @@ Supported: `.c`, `.cpp`, `.asm`, `.py`
 | `:checkhealth monprofil` | Same as above (native command) |
 
 ---
-
