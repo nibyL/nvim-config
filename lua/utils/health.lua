@@ -291,6 +291,7 @@ function M.check()
     'core.keymaps',
     'core.autocmds',
     'core.statusline',
+    'core.on_demand',
     'plugins.init',
     'plugins.ui',
     'plugins.diagnostics',

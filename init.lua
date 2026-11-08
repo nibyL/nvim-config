@@ -79,6 +79,7 @@ local CORE_MODULES = {
   'core.keymaps',
   'core.autocmds',
   'core.statusline',
+  'core.on_demand',
 }
 
 local PLUGIN_MODULES = {
