@@ -2,7 +2,7 @@
 -- GESTION DES PLUGINS (Lazy Loading)
 -- ============================================================================
 
-local lazyload = require('core.lazyload')
+local lazyload = require('core.on_demand')
 local safe = require('utils.safe')
 
 -- Plugin natif de Neovim
