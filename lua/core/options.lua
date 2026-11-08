@@ -7,7 +7,10 @@ local env = require('utils.env')
 -- ----------------------------------------------------------------------------
 -- Environnement portable (Windows / Linux / macOS / WSL)
 -- ----------------------------------------------------------------------------
-env.setup()
+local safe = require('utils.safe')
+safe.call('core.options:env.setup', function()
+  env.setup()
+end)
 env.ensure_snacks_dir() -- Fix bug snacks lazygit
 -- ----------------------------------------------------------------------------
 -- LEADER KEY (Doit être défini AVANT les plugins)

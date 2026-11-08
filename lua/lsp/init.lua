@@ -106,12 +106,21 @@ local function init_lsp()
 
   -- Activation des serveurs depuis le registre centralisé
   local registry = require('lsp.registry')
+  local safe = require('utils.safe')
+
   for _, srv in ipairs(registry) do
     local name = srv.name
     local ok, override = pcall(require, 'lsp.' .. name)
+
     if ok and type(override) == 'table' then
       vim.lsp.config(name, override)
+    elseif not ok then
+      -- Log the failure but still enable the server with defaults
+      safe.call('lsp.config:' .. name, function()
+        error('Impossible de charger les overrides pour ' .. name .. ' : ' .. tostring(override))
+      end)
     end
+
     vim.lsp.enable(name)
   end
 end
